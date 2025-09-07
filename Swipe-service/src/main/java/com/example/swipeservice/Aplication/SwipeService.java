@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+
 @Service
 public class SwipeService
 {
@@ -63,6 +64,28 @@ public class SwipeService
     public MatchDto obtenerMatch(String uidA, String uidB) {
         return matches.get(MatchId(uidA, uidB));
     }
+    // Sirve para listar marches
+    public java.util.List<String> listarMatchesDe(String userId){
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (var e : swipes.entrySet()){
+            String k = e.getKey(); String v = e.getValue();         // k = "A->B", v = "like"|"nolike"
+            if (v != null && v.equalsIgnoreCase("like")){
+                int i = k.indexOf("->");
+                if (i>0){
+                    String a = k.substring(0,i);
+                    String b = k.substring(i+2);
+                    if (a.equals(userId)){
+                        String back = swipes.get(b + "->" + a);      // ¿B también dio like a A?
+                        if (back != null && back.equalsIgnoreCase("like")){
+                            out.add(b);
+                        }
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
 
     
 
