@@ -17,7 +17,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUser(UserDTO userDTO) {
-        User user = new User(counter.incrementAndGet(), userDTO.getName(), userDTO.getEmail());
+        User user = new User(counter.incrementAndGet(), userDTO.getName(), userDTO.getEmail(), true);
         users.add(user);
         return user;
     }
@@ -33,5 +33,39 @@ public class UserServiceImpl implements UserService {
                 .filter(u -> u.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con id: " + id));
+    }
+
+    @Override
+    public User updateUser(Long id, UserDTO userDTO) {
+        User user = getUserById(id);
+        user.setName(userDTO.getName());
+        user.setEmail(userDTO.getEmail());
+        return user;
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        User user = getUserById(id);
+        users.remove(user);
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return users.stream()
+                .filter(u -> u.getEmail().equalsIgnoreCase(email))
+                .findFirst()
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con email: " + email));
+    }
+
+    @Override
+    public User toggleUserStatus(Long id, boolean active) {
+        User user = getUserById(id);
+        user.setActive(active);
+        return user;
+    }
+
+    @Override
+    public Long countUsers() {
+        return (long) users.size();
     }
 }

@@ -11,12 +11,16 @@ public class UserDTO {
     @NotBlank(message = "El email es obligatorio")
     private String email;
 
+    // Nuevo campo para activar/desactivar usuario
+    private Boolean active;
+
     // Constructores
     public UserDTO() {}
 
-    public UserDTO(String name, String email) {
+    public UserDTO(String name, String email, Boolean active) {
         this.name = name;
         this.email = email;
+        this.active = active;
     }
 
     // Getters y setters
@@ -25,4 +29,7 @@ public class UserDTO {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public Boolean getActive() { return active; }
+    public void setActive(Boolean active) { this.active = active; }
 }
