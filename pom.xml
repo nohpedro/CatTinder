@@ -15,6 +15,9 @@
     <artifactId>CatTinder</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <modules>
+        <module>demo</module>
+    </modules>
     <name>CatTinder</name>
     <description>CatTinder - agregador</description>
 
