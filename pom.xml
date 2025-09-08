@@ -16,20 +16,15 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>CatTinder</name>
     <description>CatTinder - agregador</description>
+    <packaging>pom</packaging>
 
     <properties>
         <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <!-- Lista de módulos -->
     <modules>
         <module>Swipe-service</module>
     </modules>
-
-
-    <build>
-        <plugins>
-
-        </plugins>
-    </build>
 </project>
