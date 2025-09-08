@@ -6,6 +6,7 @@ import com.example.swipeservice.dto.MatchDto;
 
 import com.example.swipeservice.Aplication.SwipeService;
 import com.example.swipeservice.dto.SwipeDto;
+import com.example.swipeservice.excepcion.*;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
