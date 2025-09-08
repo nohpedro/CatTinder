@@ -1,6 +1,7 @@
 package com.example.swipeservice.Aplication;
 
 import com.example.swipeservice.dto.MatchDto;
+import com.example.swipeservice.excepcion.ExcepcionSolicitudInvalida;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -41,10 +42,10 @@ public class SwipeService
         String D = norm(dir);
 
         if (A == null || A.isEmpty() || B == null || B.isEmpty()){
-            throw new IllegalArgumentException("actorId y targetId son requeridos");
+            throw new ExcepcionSolicitudInvalida("actorId y targetId son requeridos");
         }
         if (D == null || D.isEmpty()){
-            throw new IllegalArgumentException("dir es requerido");
+            throw new ExcepcionSolicitudInvalida("dir es requerido");
         }
         swipes.put(swipeId(A, B), D);
     }
