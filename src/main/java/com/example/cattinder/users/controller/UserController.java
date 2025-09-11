@@ -4,6 +4,8 @@ import com.example.cattinder.users.dto.UserDTO;
 import com.example.cattinder.users.model.User;
 import com.example.cattinder.users.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -23,11 +25,18 @@ public class UserController {
         this.userService = userService;
     }
 
-    // Crear usuario
     @Operation(summary = "Crear un nuevo usuario")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos")
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Usuario creado exitosamente",
+                    content = @Content(schema = @Schema(implementation = User.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Datos inválidos",
+                    content = @Content(schema = @Schema(implementation = UserDTO.class))
+            )
     })
     @PostMapping
     public ResponseEntity<User> createUser(@Valid @RequestBody UserDTO userDTO) {
@@ -35,19 +44,25 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
-    // Listar todos los usuarios
     @Operation(summary = "Obtener todos los usuarios")
-    @ApiResponse(responseCode = "200", description = "Lista de usuarios devuelta exitosamente")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Lista de usuarios devuelta exitosamente",
+            content = @Content(schema = @Schema(implementation = User.class))
+    )
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
-    // Buscar usuario por ID
     @Operation(summary = "Obtener un usuario por su ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Usuario encontrado",
+                    content = @Content(schema = @Schema(implementation = User.class))
+            ),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     @GetMapping("/{id}")
@@ -56,10 +71,13 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    // Actualizar usuario
     @Operation(summary = "Actualizar un usuario existente")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Usuario actualizado"),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Usuario actualizado",
+                    content = @Content(schema = @Schema(implementation = User.class))
+            ),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     @PutMapping("/{id}")
@@ -68,7 +86,6 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    // Eliminar usuario
     @Operation(summary = "Eliminar un usuario por su ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Usuario eliminado"),
@@ -80,10 +97,13 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    // Buscar usuario por email
     @Operation(summary = "Buscar un usuario por su email")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Usuario encontrado",
+                    content = @Content(schema = @Schema(implementation = User.class))
+            ),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     @GetMapping("/search")
@@ -92,10 +112,13 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    // Activar/Desactivar usuario
     @Operation(summary = "Activar o desactivar un usuario")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Estado del usuario actualizado"),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Estado del usuario actualizado",
+                    content = @Content(schema = @Schema(implementation = User.class))
+            ),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     @PatchMapping("/{id}/status")
@@ -104,9 +127,11 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    // Contar usuarios
     @Operation(summary = "Obtener el total de usuarios registrados")
-    @ApiResponse(responseCode = "200", description = "Cantidad total de usuarios devuelta")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Cantidad total de usuarios devuelta"
+    )
     @GetMapping("/count")
     public ResponseEntity<Long> countUsers() {
         return ResponseEntity.ok(userService.countUsers());

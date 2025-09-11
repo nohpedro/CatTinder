@@ -30,20 +30,20 @@ class UserServiceTest {
 
     @Test
     void testUpdateUser() {
-        UserDTO dto = new UserDTO("Rodrigo", "rodrigo@email.com", true);
+        UserDTO dto = new UserDTO("Rodrigo", "rodrigo@email.com", false);
         User user = userService.createUser(dto);
 
-        UserDTO updateDto = new UserDTO("Rodo", "rodo@email.com", false);
+        UserDTO updateDto = new UserDTO("Rodo", "rodo@email.com", true);
         User updatedUser = userService.updateUser(user.getId(), updateDto);
 
-        assertEquals("Rodo", updatedUser.getName());
+        assertEquals("Rodoys", updatedUser.getName());
         assertEquals("rodo@email.com", updatedUser.getEmail());
-        assertFalse(updatedUser.isActive());
+        assertTrue(user.isActive());
     }
 
     @Test
     void testToggleUserStatus() {
-        UserDTO dto = new UserDTO("Rodrigo", "rodrigo@email.com", true);
+        UserDTO dto = new UserDTO("Rodrigo", "rodrigo@email.com", false);
         User user = userService.createUser(dto);
 
         User toggledUser = userService.toggleUserStatus(user.getId(), false);

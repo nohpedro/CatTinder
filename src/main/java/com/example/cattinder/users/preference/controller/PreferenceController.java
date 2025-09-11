@@ -4,6 +4,8 @@ import com.example.cattinder.users.preference.dto.PreferenceDTO;
 import com.example.cattinder.users.preference.model.Preference;
 import com.example.cattinder.users.preference.service.PreferenceService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -25,8 +27,16 @@ public class PreferenceController {
 
     @Operation(summary = "Crear una nueva preferencia para un usuario")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Preferencia creada exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Datos inválidos")
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Preferencia creada exitosamente",
+                    content = @Content(schema = @Schema(implementation = Preference.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Datos inválidos",
+                    content = @Content(schema = @Schema(implementation = PreferenceDTO.class))
+            )
     })
     @PostMapping
     public ResponseEntity<Preference> createPreference(@Valid @RequestBody PreferenceDTO dto) {
@@ -35,7 +45,11 @@ public class PreferenceController {
     }
 
     @Operation(summary = "Obtener todas las preferencias de un usuario")
-    @ApiResponse(responseCode = "200", description = "Preferencias devueltas exitosamente")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Preferencias devueltas exitosamente",
+            content = @Content(schema = @Schema(implementation = Preference.class))
+    )
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Preference>> getPreferencesByUserId(@PathVariable Long userId) {
         return ResponseEntity.ok(preferenceService.getPreferencesByUserId(userId));
@@ -43,7 +57,11 @@ public class PreferenceController {
 
     @Operation(summary = "Actualizar una preferencia existente")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Preferencia actualizada"),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Preferencia actualizada",
+                    content = @Content(schema = @Schema(implementation = Preference.class))
+            ),
             @ApiResponse(responseCode = "404", description = "Preferencia no encontrada")
     })
     @PutMapping("/{id}")
