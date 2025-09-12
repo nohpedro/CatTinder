@@ -10,3 +10,4 @@ public class CatTinderApplication {
         SpringApplication.run(CatTinderApplication.class, args);
     }
 }
+6
