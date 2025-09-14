@@ -8,89 +8,90 @@ import com.example.cattinder.authentication.dto.RegisterRequest;
 import com.example.cattinder.authentication.exception.InvalidCredentialsException;
 import com.example.cattinder.authentication.exception.TokenValidationException;
 import com.example.cattinder.authentication.model.AuthUser;
-import com.example.cattinder.authentication.util.JwtUtil;
+import com.example.cattinder.authentication.repository.UserRepository;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    private final JwtUtil jwtUtil;
+    private final ConcurrentHashMap<String, String> refreshTokens = new ConcurrentHashMap<>();
+
+    private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
-    private final List<AuthUser> users = new ArrayList<>();
-    private final AtomicLong counter = new AtomicLong(1);
+    private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
-    public AuthServiceImpl(JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
-        this.jwtUtil = jwtUtil;
+    public AuthServiceImpl(AuthenticationManager authenticationManager,
+                           PasswordEncoder passwordEncoder,
+                           JwtUtil jwtUtil,
+                           UserRepository userRepository) {
+        this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
+    }
 
-        // Usuario de prueba
-        users.add(new AuthUser(counter.getAndIncrement(),
-                "admin@cattinder.com",
-                passwordEncoder.encode("123456"),
-                "ADMIN",
-                true));
+    @Override
+    public void register(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new InvalidCredentialsException("User already exists with email: " + request.getEmail());
+        }
+
+        AuthUser user = new AuthUser(
+                request.getEmail(),
+                passwordEncoder.encode(request.getPassword()),
+                request.getName()
+        );
+
+        userRepository.save(user);
     }
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        AuthUser user = users.stream()
-                .filter(u -> u.getEmail().equals(request.getEmail()))
-                .findFirst()
-                .orElseThrow(() -> new InvalidCredentialsException("Usuario o contraseña inválidos"));
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new InvalidCredentialsException("Usuario o contraseña inválidos");
+            AuthUser user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new InvalidCredentialsException("User not found"));
+
+            String accessToken = jwtUtil.generateToken(user.getEmail());
+            String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
+
+            refreshTokens.put(user.getEmail(), refreshToken);
+
+            return new LoginResponse(accessToken, refreshToken, "Login successful");
+        } catch (Exception e) {
+            throw new InvalidCredentialsException("Invalid email or password");
         }
-
-        String accessToken = jwtUtil.generateToken(user.getEmail());
-        String refreshToken = jwtUtil.generateToken(user.getEmail());
-        return new LoginResponse(accessToken, refreshToken);
     }
 
     @Override
     public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
-        String email;
         try {
-            email = jwtUtil.extractEmail(request.getRefreshToken());
+            String email = jwtUtil.extractUsername(request.getRefreshToken());
+
+            if (!jwtUtil.validateToken(request.getRefreshToken(), email) ||
+                    !refreshTokens.containsKey(email) ||
+                    !refreshTokens.get(email).equals(request.getRefreshToken())) {
+                throw new TokenValidationException("Invalid refresh token");
+            }
+
+            String newAccessToken = jwtUtil.generateToken(email);
+            String newRefreshToken = jwtUtil.generateRefreshToken(email);
+
+            refreshTokens.put(email, newRefreshToken);
+
+            return new RefreshTokenResponse(newAccessToken, newRefreshToken);
         } catch (Exception e) {
-            throw new TokenValidationException("Refresh token inválido");
+            throw new TokenValidationException("Failed to refresh token: " + e.getMessage());
         }
-
-        if (!jwtUtil.validateToken(request.getRefreshToken(), email)) {
-            throw new TokenValidationException("Refresh token inválido o expirado");
-        }
-
-        String accessToken = jwtUtil.generateToken(email);
-        return new RefreshTokenResponse(accessToken);
-    }
-
-    @Override
-    public LoginResponse register(RegisterRequest request) {
-        boolean exists = users.stream().anyMatch(u -> u.getEmail().equals(request.getEmail()));
-        if (exists) {
-            throw new InvalidCredentialsException("El usuario ya existe");
-        }
-
-        AuthUser user = new AuthUser(counter.getAndIncrement(),
-                request.getEmail(),
-                passwordEncoder.encode(request.getPassword()),
-                request.getRole(),
-                true);
-        users.add(user);
-
-        String accessToken = jwtUtil.generateToken(user.getEmail());
-        String refreshToken = jwtUtil.generateToken(user.getEmail());
-        return new LoginResponse(accessToken, refreshToken);
-    }
-
-    @Override
-    public void logout(String email) {
-        // Logout simbólico
-        System.out.println("Usuario " + email + " ha cerrado sesión (logout simbólico).");
     }
 }

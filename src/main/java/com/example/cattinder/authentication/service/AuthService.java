@@ -7,12 +7,7 @@ import com.example.cattinder.authentication.dto.RefreshTokenResponse;
 import com.example.cattinder.authentication.dto.RegisterRequest;
 
 public interface AuthService {
-
+    void register(RegisterRequest request);
     LoginResponse login(LoginRequest request);
-
     RefreshTokenResponse refreshToken(RefreshTokenRequest request);
-
-    LoginResponse register(RegisterRequest request);
-
-    void logout(String email); // ⚠️ la firma exacta debe coincidir
 }
