@@ -1,8 +1,12 @@
 package com.example.cattinder.authentication.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
+
+@Schema(description = "Request object for user registration")
 
 public class RegisterRequest {
     @NotBlank(message = "Name is required")

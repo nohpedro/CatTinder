@@ -1,8 +1,10 @@
 package com.example.cattinder.authentication.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
+@Schema(description = "Request object for user login")
 public class LoginRequest {
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
@@ -11,8 +13,6 @@ public class LoginRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
-    public LoginRequest() {
-    }
 
     public LoginRequest(String email, String password) {
         this.email = email;
