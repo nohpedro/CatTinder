@@ -76,11 +76,19 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
         try {
-            String email = jwtUtil.extractUsername(request.getRefreshToken());
+            // PRIMERO validar que el token tenga formato básico
+            String token = request.getRefreshToken();
+            if (token == null || token.split("\\.").length != 3) {
+                throw new TokenValidationException("Invalid token format");
+            }
 
-            if (!jwtUtil.validateToken(request.getRefreshToken(), email) ||
+            // LUEGO extraer el email
+            String email = jwtUtil.extractUsername(token);
+
+            // FINALMENTE hacer las otras validaciones
+            if (!jwtUtil.validateToken(token, email) ||
                     !refreshTokens.containsKey(email) ||
-                    !refreshTokens.get(email).equals(request.getRefreshToken())) {
+                    !refreshTokens.get(email).equals(token)) {
                 throw new TokenValidationException("Invalid refresh token");
             }
 
