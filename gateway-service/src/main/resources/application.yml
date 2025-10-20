@@ -21,11 +21,14 @@ spring:
         - id: swipe-service-openapi
           uri: lb://SWIPE-SERVICE
           predicates:
-            - Path=/swipe-service/v3/api-docs/**, /swipe-service/swagger-ui.html, /swipe-service/swagger-ui/**, /swipe-service/webjars/**, /swipe-service/swagger-resources/**
+            - Path=/swipe-service/v3/api-docs/**
+            - Path=/swipe-service/swagger-ui.html
+            - Path=/swipe-service/swagger-ui/**
+            - Path=/swipe-service/webjars/**
+            - Path=/swipe-service/swagger-resources/**
           filters:
             - StripPrefix=1
 
-      # CORS global (dev)
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -44,7 +47,6 @@ eureka:
     service-url:
       defaultZone: http://localhost:8762/eureka
 
-# Swagger UI hospedado en el gateway, apuntando al spec del micro
 springdoc:
   api-docs:
     enabled: false
