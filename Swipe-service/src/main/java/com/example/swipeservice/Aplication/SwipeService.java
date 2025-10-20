@@ -114,4 +114,8 @@ public class SwipeService
                 .map(e -> new MatchDto(e.getUsuarioA(), e.getUsuarioB(), e.getEstado()))
                 .orElse(null);
     }
+
+    public boolean existeMatch(String u1, String u2) {
+        return matchRepo.existeMatchEntre(u1, u2);
+    }
 }

@@ -7,28 +7,25 @@ spring:
   cloud:
     gateway:
       default-filters:
-        # Evidencia de paso por gateway
         - AddResponseHeader=X-Gateway, OK
       routes:
-        # ==== Ruta principal hacia tu SwipeService ====
+        # ==== API del Swipe Service ====
         - id: swipe-service
-          uri: lb://SWIPE-SERVICE   # usa Eureka. Sin Eureka: ver application-local.yml más abajo
+          uri: lb://SWIPE-SERVICE
           predicates:
             - Path=/swipe-service/**
           filters:
             - StripPrefix=1
-            # Si tus endpoints internos no cuelgan de /api/** o requieren otra raíz, descomenta:
-            # - RewritePath=/swipe-service/(?<segment>.*), /${segment}
 
-        # ==== Swagger / OpenAPI del backend expuesto via gateway ====
+        # ==== OpenAPI/Swagger del SwipeService (proxy) ====
         - id: swipe-service-openapi
           uri: lb://SWIPE-SERVICE
           predicates:
-            - Path=/swipe-service/v3/api-docs/**,/swipe-service/swagger-ui.html,/swipe-service/swagger-ui/**,/swipe-service/webjars/**,/swipe-service/swagger-resources/**
+            - Path=/swipe-service/v3/api-docs/**, /swipe-service/swagger-ui.html, /swipe-service/swagger-ui/**, /swipe-service/webjars/**, /swipe-service/swagger-resources/**
           filters:
             - StripPrefix=1
 
-      # CORS global para orígenes de desarrollo
+      # CORS global (dev)
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -47,7 +44,7 @@ eureka:
     service-url:
       defaultZone: http://localhost:8762/eureka
 
-# El Swagger UI que sirve el gateway muestra la API del SwipeService (proxied)
+# Swagger UI hospedado en el gateway, apuntando al spec del micro
 springdoc:
   api-docs:
     enabled: false

@@ -1,5 +1,9 @@
 server:
   port: 8081
+  forward-headers-strategy: framework   # respeta X-Forwarded-* del gateway
+  error:
+    include-message: always
+    include-binding-errors: always
 
 spring:
   application:
@@ -16,6 +20,14 @@ spring:
     show-sql: true
     properties:
       hibernate.format_sql: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+    # si solo usarás el UI del micro por el gateway, puedes ayudarle con:
+    # config-url: /swipe-service/v3/api-docs/swagger-config
 
 eureka:
   instance:
