@@ -1,27 +1,22 @@
-# ============ Fase de construcción ============
-FROM eclipse-temurin:21-jre-alpine AS builder
-WORKDIR /extracted
+# --- build ---
+FROM eclipse-temurin:17-jdk-alpine AS builder
+WORKDIR /workspace
+COPY . .
+# Fix típico Windows (CRLF) y permisos
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
+# ⬇️ Construye por ruta (sin reactor)
+RUN ./mvnw -f eureka-server/pom.xml -Dmaven.test.skip=true package
 
-ARG JAR_FILE=target/*.jar
-COPY ${JAR_FILE} app.jar
-
-# Extrae capas con layertools
-RUN java -Djarmode=layertools -jar app.jar extract
-
-# ============ Fase final (runtime) ============
-FROM eclipse-temurin:21-jre-alpine
-WORKDIR /application
-
-# Usuario no-root
-RUN addgroup -S spring && adduser -S spring -G spring
-USER spring:spring
-
-# Copiar capas extraídas desde la fase builder
-COPY --from=builder /extracted/dependencies/ ./
-COPY --from=builder /extracted/spring-boot-loader/ ./
-COPY --from=builder /extracted/snapshot-dependencies/ ./
-COPY --from=builder /extracted/application/ ./
-
-EXPOSE 8761
-
-ENTRYPOINT ["java", "-cp", "/application", "org.springframework.boot.loader.launch.JarLauncher"]
+# --- runtime ---
+FROM eclipse-temurin:17-jre-alpine
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError" \
+    SERVER_PORT=8762 \
+    SPRING_APPLICATION_NAME=eureka \
+    EUREKA_CLIENT_REGISTER_WITH_EUREKA=false \
+    EUREKA_CLIENT_FETCH_REGISTRY=false
+RUN addgroup -S app && adduser -S app -G app
+WORKDIR /app
+COPY --from=builder /workspace/eureka-server/target/*-SNAPSHOT.jar /app/app.jar
+USER app
+EXPOSE 8762
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]

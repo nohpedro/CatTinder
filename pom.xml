@@ -25,5 +25,6 @@
     <modules>
         <module>Swipe-service</module>
         <module>eureka-server</module>
+        <module>gateway-service</module>
     </modules>
 </project>
