@@ -9,7 +9,7 @@ services:
 
   eureka:
     build:
-      context: .
+      context: ../eureka-server
       dockerfile: eureka-server/Dockerfile
     container_name: eureka
     environment:
@@ -27,7 +27,7 @@ services:
 
   gateway:
     build:
-      context: .
+      context: ../gateway-service
       dockerfile: gateway-service/Dockerfile
     container_name: gateway
     depends_on:
@@ -41,12 +41,12 @@ services:
       EUREKA_INSTANCE_HOSTNAME: "gateway"
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
     ports:
-      - "18082:18082"
+      - "8082:8082"
 
   swipe-service:
     build:
-      context: .
-      dockerfile: Swipe-service/Dockerfile
+      context: ./config-ms
+      dockerfile: config-ms/Dockerfile
     environment:
       SERVER_PORT: "8081"
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/review-db"
@@ -55,7 +55,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
     depends_on: ["postgres","eureka"]
-    ports: ["18081:18081"]
+    ports: ["8081:8081"]
 
 volumes:
   pgdata:
