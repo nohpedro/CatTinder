@@ -21,13 +21,10 @@ spring:
         - id: swipe-service-openapi
           uri: lb://SWIPE-SERVICE
           predicates:
-            - Path=/swipe-service/v3/api-docs/**
-            - Path=/swipe-service/swagger-ui.html
-            - Path=/swipe-service/swagger-ui/**
-            - Path=/swipe-service/webjars/**
-            - Path=/swipe-service/swagger-resources/**
+            - Path=/swipe-service/v3/api-docs/**, /swipe-service/swagger-ui.html, /swipe-service/swagger-ui/**, /swipe-service/webjars/**, /swipe-service/swagger-resources/**
           filters:
             - StripPrefix=1
+
 
       globalcors:
         corsConfigurations:
@@ -36,7 +33,13 @@ spring:
               - "http://localhost:3000"
               - "http://localhost:5173"
               - "http://127.0.0.1:3000"
-            allowedMethods: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
             allowedHeaders: "*"
             allowCredentials: true
 
