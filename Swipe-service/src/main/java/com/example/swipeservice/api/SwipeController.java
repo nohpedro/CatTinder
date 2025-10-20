@@ -40,26 +40,10 @@ public class SwipeController {
 
     // -------------------- SWIPE PRINCIPAL --------------------
 
-    @Operation(
-            summary = "Registrar un swipe",
-            description = "Registra un nuevo swipe entre usuarios. "
-                    + "Si el swipe es positivo y existe reciprocidad, se genera un match automáticamente.",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "Swipe registrado exitosamente",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(example = "{\"mensaje\": \"match\", \"matchId\": \"alex_camila\"}"))),
-                    @ApiResponse(responseCode = "400", description = "Solicitud inválida",
-                            content = @Content(mediaType = "application/json"))
-            }
-    )
     @PostMapping(value = "/{actorId}/{targetId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> hacerSwipe(
-            @Parameter(description = "Usuario que realiza el swipe", example = "alex")
-            @PathVariable String actorId,
-            @Parameter(description = "Usuario objetivo del swipe", example = "camila")
-            @PathVariable String targetId,
-            @Valid @RequestBody SwipeDto body) {
-
+    public ResponseEntity<?> hacerSwipe(@PathVariable String actorId,
+                                        @PathVariable String targetId,
+                                        @RequestBody SwipeDto body) {
         String matchId = servicio.procesarSwipeYQuizasMatch(actorId, targetId, body.getDir());
 
         if (matchId != null) {
@@ -67,8 +51,10 @@ public class SwipeController {
                     .body(Map.of("mensaje", "match", "matchId", matchId));
         }
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("mensaje", "Swipe", "matchId", null));
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("mensaje", "Swipe");
+        resp.put("matchId", null);
+        return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
     // -------------------- MATCH EXISTENTE --------------------
