@@ -24,6 +24,7 @@
     </properties>
     <modules>
         <module>Swipe-service</module>
+        <module>confg-ms</module>
         <module>eureka-server</module>
         <module>gateway-service</module>
     </modules>

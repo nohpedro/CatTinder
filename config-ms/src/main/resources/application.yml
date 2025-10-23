@@ -1,0 +1,53 @@
+server:
+  port: 8081
+  forward-headers-strategy: framework   # respeta X-Forwarded-* del gateway
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  application:
+    name: config-ms
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/review-db
+    username: admin
+    password: admin
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+    # si solo usarás el UI del micro por el gateway, puedes ayudarle con:
+    # config-url: /swipe-service/v3/api-docs/swagger-config
+
+eureka:
+  instance:
+    preferIpAddress: true
+    hostname: localhost
+    non-secure-port: ${server.port}
+    instance-id: ${spring.application.name}:${server.port}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://localhost:8762/eureka/
+    registryFetchIntervalSeconds: 5
+    initialInstanceInfoReplicationIntervalSeconds: 5
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

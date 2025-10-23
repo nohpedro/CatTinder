@@ -4,8 +4,11 @@ services:
     environment:
       POSTGRES_DB: review-db
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-    ports: ["5433:5432"]
+      POSTGRES_PASSWORD:
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   eureka:
     build:
@@ -19,7 +22,6 @@ services:
     ports:
       - "8762:8762"
     healthcheck:
-      # usa actuator si lo tienes:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8762/actuator/health"]
       interval: 5s
       timeout: 3s
@@ -34,10 +36,8 @@ services:
       eureka:
         condition: service_healthy
     environment:
-      SERVER_PORT: "8082"
-      # MUY IMPORTANTE: en contenedores, apuntar a 'eureka' (nombre del servicio), no localhost
+      SERVER_PORT: "18082"  # <-- igual que el puerto interno que exponemos
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
-      # opcional: identifica host/puerto para el registro
       EUREKA_INSTANCE_HOSTNAME: "gateway"
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
     ports:
@@ -47,15 +47,35 @@ services:
     build:
       context: .
       dockerfile: Swipe-service/Dockerfile
+    container_name: swipe-service
+    depends_on:
+      - postgres
+      - eureka
     environment:
-      SERVER_PORT: "8081"
+      SERVER_PORT: "18081"  # <-- igual que el puerto interno que exponemos
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/review-db"
       SPRING_DATASOURCE_USERNAME: "admin"
       SPRING_DATASOURCE_PASSWORD: "admin"
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
-    depends_on: ["postgres","eureka"]
-    ports: ["18081:18081"]
+    ports:
+      - "18081:18081"
+
+  config-ms:
+    build:
+      context: .
+      dockerfile: config-ms/Dockerfile
+    container_name: config-ms
+    depends_on:
+      eureka:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: "18083"  # <-- igual que el puerto interno que exponemos
+      SPRING_PROFILES_ACTIVE: "prod-docker"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
+      EUREKA_INSTANCE_HOSTNAME: "config-ms"
+    ports:
+      - "18083:18083"
 
 volumes:
   pgdata:
