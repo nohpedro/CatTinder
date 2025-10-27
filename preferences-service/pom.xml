@@ -11,9 +11,9 @@
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>users-service</artifactId>
-    <name>CatTinder - Users Service</name>
-    <description>Microservicio de usuarios de CatTinder</description>
+    <artifactId>preferences-service</artifactId>
+    <name>CatTinder - Preferences Service</name>
+    <description>Microservicio de preferencias de CatTinder</description>
 
     <dependencies>
 

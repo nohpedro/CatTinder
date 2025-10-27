@@ -53,6 +53,8 @@
     <modules>
         <module>eureka-server</module>
         <module>users-service</module>
+        <module>preferences-service</module>
+        <module>api-gateway</module>
         <!-- más adelante agregamos:
         <module>users-service</module>
         <module>preferences-service</module>
