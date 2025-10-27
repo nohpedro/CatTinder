@@ -22,53 +22,52 @@
     </properties>
 
     <dependencies>
-        <!-- Núcleo de Spring Boot -->
+        <!-- Núcleo básico de Spring Boot -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
 
-        <!-- Starter Web para controladores REST -->
+        <!-- Web / Controladores REST -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Validación de DTOs -->
+        <!-- Validación de DTOs (@NotBlank, @Email, etc.) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- OpenAPI / Swagger -->
+        <!-- JPA / Hibernate (persistencia con repositorios) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Driver de PostgreSQL -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- OpenAPI / Swagger UI -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.8.13</version>
         </dependency>
 
-        <!-- Firebase Admin SDK -->
-        <dependency>
-            <groupId>com.google.firebase</groupId>
-            <artifactId>firebase-admin</artifactId>
-            <version>9.3.0</version>
-        </dependency>
-
-        <!-- Cliente de Firestore -->
-        <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-firestore</artifactId>
-            <version>3.20.0</version>
-        </dependency>
-
-        <!-- Lombok -->
+        <!-- Lombok (lo dejamos igual que tú lo tenías) -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
 
-        <!-- Test -->
+        <!-- Dependencias de test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -87,4 +86,3 @@
     </build>
 
 </project>
-

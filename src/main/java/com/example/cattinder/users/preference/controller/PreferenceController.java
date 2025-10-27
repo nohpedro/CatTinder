@@ -55,6 +55,22 @@ public class PreferenceController {
         return ResponseEntity.ok(preferenceService.getPreferencesByUserId(userId));
     }
 
+    // NUEVO: ejemplo de consulta nativa con filtro por availability
+    @Operation(summary = "Obtener preferencias de un usuario filtradas por disponibilidad (usa consulta nativa SQL)")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Preferencias filtradas devueltas exitosamente",
+            content = @Content(schema = @Schema(implementation = Preference.class))
+    )
+    @GetMapping("/user/{userId}/filter")
+    public ResponseEntity<List<Preference>> getPreferencesByUserAndAvailability(
+            @PathVariable Long userId,
+            @RequestParam String availability
+    ) {
+        List<Preference> prefs = preferenceService.getPreferencesByUserIdAndAvailability(userId, availability);
+        return ResponseEntity.ok(prefs);
+    }
+
     @Operation(summary = "Actualizar una preferencia existente")
     @ApiResponses(value = {
             @ApiResponse(
@@ -65,8 +81,10 @@ public class PreferenceController {
             @ApiResponse(responseCode = "404", description = "Preferencia no encontrada")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Preference> updatePreference(@PathVariable Long id,
-                                                       @Valid @RequestBody PreferenceDTO dto) {
+    public ResponseEntity<Preference> updatePreference(
+            @PathVariable Long id,
+            @Valid @RequestBody PreferenceDTO dto
+    ) {
         return ResponseEntity.ok(preferenceService.updatePreference(id, dto));
     }
 

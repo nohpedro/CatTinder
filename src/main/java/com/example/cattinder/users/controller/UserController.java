@@ -21,6 +21,7 @@ public class UserController {
 
     private final UserService userService;
 
+    // NOTA: Spring inyecta la implementación (UserServiceImpl)
     public UserController(UserService userService) {
         this.userService = userService;
     }
@@ -53,6 +54,20 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
+
+    // NUEVO ENDPOINT: usuarios activos usando native query
+    @Operation(summary = "Obtener todos los usuarios activos (consulta nativa SQL)")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Lista de usuarios activos devuelta exitosamente",
+            content = @Content(schema = @Schema(implementation = User.class))
+    )
+    @GetMapping("/active")
+    public ResponseEntity<List<User>> getAllActiveUsers() {
+        // downcast mínimo para no romper tu interfaz.
+        List<User> users = userService.getAllActiveUsers();
         return ResponseEntity.ok(users);
     }
 

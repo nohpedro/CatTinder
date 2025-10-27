@@ -1,20 +1,43 @@
 package com.example.cattinder.users.model;
 
-public class User {
-    private Long id;
-    private String name;
-    private String email;
-    private boolean active; // Nuevo campo para estado del usuario
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-    // Constructor principal
+@Entity
+@Table(name = "users") // nombre de la tabla en la BD
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank(message = "El nombre es obligatorio")
+    @Column(nullable = false)
+    private String name;
+
+    @Email(message = "El email debe ser válido")
+    @NotBlank(message = "El email es obligatorio")
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @NotNull(message = "El estado activo es obligatorio")
+    @Column(nullable = false)
+    private Boolean active;
+
+    // Constructor vacío requerido por JPA
+    public User() {}
+
+    // Constructor principal (por defecto activo=true)
     public User(Long id, String name, String email) {
         this.id = id;
         this.name = name;
         this.email = email;
-        this.active = true; // Por defecto activo
+        this.active = true;
     }
 
-    // Constructor completo (por si quieres crear con estado específico)
+    // Constructor completo
     public User(Long id, String name, String email, boolean active) {
         this.id = id;
         this.name = name;
@@ -32,8 +55,8 @@ public class User {
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
 
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
+    public Boolean getActive() { return active; }
+    public void setActive(Boolean active) { this.active = active; }
 
     @Override
     public String toString() {
