@@ -12,20 +12,54 @@ public class ApiGatewayConfig {
     public RouteLocator routes(RouteLocatorBuilder builder) {
         return builder.routes()
 
-                // RUTA USERS
-                .route("users-service", r -> r
-                        // cuando el cliente pega a /users/** en el gateway...
+                // =====================================================
+                // RUTAS DE NEGOCIO
+                // =====================================================
+
+                // USERS API -> http://localhost:8083/users/api/v1/...
+                .route("users-service-api", r -> r
                         .path("/users/**")
-                        // ...le quitamos el primer segmento (/users)
-                        .filters(f -> f.stripPrefix(1))
-                        // ...y lo mandamos al servicio registrado en Eureka
+                        .filters(f -> f.stripPrefix(1)) // /users/... -> /...
                         .uri("lb://USERS-SERVICE")
                 )
 
-                // RUTA PREFERENCES (para que ya lo tengas listo)
-                .route("preferences-service", r -> r
+                // PREFERENCES API -> http://localhost:8083/preferences/api/v1/...
+                .route("preferences-service-api", r -> r
                         .path("/preferences/**")
-                        .filters(f -> f.stripPrefix(1))
+                        .filters(f -> f.stripPrefix(1)) // /preferences/... -> /...
+                        .uri("lb://PREFERENCES-SERVICE")
+                )
+
+                // =====================================================
+                // SWAGGER USERS VÍA GATEWAY
+                // =====================================================
+                //
+                // Ejemplo:
+                //   /swagger/users/swagger-ui/index.html
+                //   /swagger/users/swagger-ui/swagger-initializer.js
+                //   /swagger/users/v3/api-docs
+                //
+                // stripPrefix(2):
+                //   /swagger/users/swagger-ui/index.html  -> /swagger-ui/index.html
+                //   /swagger/users/v3/api-docs           -> /v3/api-docs
+                //
+
+                .route("users-swagger", r -> r
+                        .path("/swagger/users/**")
+                        .filters(f -> f.stripPrefix(2))
+                        .uri("lb://USERS-SERVICE")
+                )
+
+                // =====================================================
+                // SWAGGER PREFERENCES VÍA GATEWAY
+                // =====================================================
+                //
+                //   /swagger/preferences/swagger-ui/index.html
+                //   /swagger/preferences/v3/api-docs
+                //
+                .route("preferences-swagger", r -> r
+                        .path("/swagger/preferences/**")
+                        .filters(f -> f.stripPrefix(2))
                         .uri("lb://PREFERENCES-SERVICE")
                 )
 

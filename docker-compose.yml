@@ -1,0 +1,84 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cattinder
+    ports:
+      - "5432:5432"
+    networks:
+      - cattinder-net
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  eureka-server:
+    build:
+      context: .
+      dockerfile: eureka-server/Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - cattinder-net
+
+  users-service:
+    build:
+      context: .
+      dockerfile: users-service/Dockerfile
+    container_name: users-service
+    depends_on:
+      - postgres
+      - eureka-server
+    environment:
+      # override por si no quieres usar ENV del Dockerfile
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cattinder
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    ports:
+      - "8081:8081"
+    networks:
+      - cattinder-net
+
+  preferences-service:
+    build:
+      context: .
+      dockerfile: preferences-service/Dockerfile
+    container_name: preferences-service
+    depends_on:
+      - postgres
+      - eureka-server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cattinder
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    ports:
+      - "8082:8082"
+    networks:
+      - cattinder-net
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: api-gateway
+    depends_on:
+      - eureka-server
+      - users-service
+      - preferences-service
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    ports:
+      - "8083:8083"
+    networks:
+      - cattinder-net
+
+networks:
+  cattinder-net:
+    driver: bridge
+
+volumes:
+  pgdata:
