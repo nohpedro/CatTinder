@@ -1,6 +1,7 @@
 package com.example.confgms.dto;
-
+import jakarta.validation.constraints.NotBlank;
 public class configDto {
+    @NotBlank(message = "userid es requerido")
     private String userid;
     private boolean darkmode;
     private boolean showInfo;
@@ -12,11 +13,12 @@ public class configDto {
                      boolean showInfo,
                      boolean showOnlineStatus,
                      boolean showNotifications) {
+        this.userid = userid;
         this.darkmode = darkmode;
         this.showInfo = showInfo;
         this.showOnlineStatus = showOnlineStatus;
         this.showNotifications = showNotifications;
-        this.userid = userid;
+
     }
 
     public String getUserid() {
@@ -29,6 +31,7 @@ public class configDto {
     public Boolean getShowOnlineStatus() { return showOnlineStatus; }
     public Boolean getShowNotifications() { return showNotifications; }
     //Setters
+    public void setUserid(String userid) { this.userid = userid; }
     public void setShowInfo(Boolean showInfo) { this.showInfo = showInfo; }
     public void setShowOnlineStatus(Boolean showOnlineStatus) { this.showOnlineStatus = showOnlineStatus; }
     public void setDarkmode(Boolean Darkmode) { this.darkmode=Darkmode; }
