@@ -64,8 +64,8 @@ services:
   config-ms:
     build:
       context: .
-      dockerfile: config-ms/Dockerfile
-    container_name: config-ms
+      dockerfile: confg-ms/Dockerfile
+    container_name: confg-ms
     depends_on:
       eureka:
         condition: service_healthy

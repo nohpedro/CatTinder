@@ -14,15 +14,9 @@ import java.util.Optional;
  * - Incluye consultas case-insensitive y toggles parciales.
  */
 public interface ConfigRepository extends JpaRepository<confEntity, String> {
-
-    // ------------------ Lookups (case-insensitive) ------------------
-
     Optional<confEntity> findByUseridIgnoreCase(String userid);
 
     boolean existsByUseridIgnoreCase(String userid);
-
-    // ------------------ EXISTS nativo (similar a tu ejemplo) ------------------
-
     @Query(value = """
         SELECT EXISTS(
           SELECT 1
@@ -31,9 +25,6 @@ public interface ConfigRepository extends JpaRepository<confEntity, String> {
         )
         """, nativeQuery = true)
     boolean existeConfigPara(@Param("uid") String uid);
-
-    // ------------------ Proyección de flags (ligera) ------------------
-
     interface FlagsView {
         boolean getDarkmode();
         boolean getShowInfo();
@@ -50,9 +41,6 @@ public interface ConfigRepository extends JpaRepository<confEntity, String> {
         WHERE LOWER(c.userid) = LOWER(:uid)
         """)
     Optional<FlagsView> findFlagsByUserid(@Param("uid") String userid);
-
-    // ------------------ Updates parciales (toggles rápidos) ------------------
-
     @Modifying
     @Query("""
         UPDATE confEntity c
@@ -85,7 +73,6 @@ public interface ConfigRepository extends JpaRepository<confEntity, String> {
         """)
     int setShowNotifications(@Param("uid") String userid, @Param("valor") boolean valor);
 
-    // ------------------ (Opcional) UPSERT nativo Postgres ------------------
     // Úsalo solo si estás en Postgres; para otros motores, mejor .save() en el service.
     @Modifying
     @Query(value = """

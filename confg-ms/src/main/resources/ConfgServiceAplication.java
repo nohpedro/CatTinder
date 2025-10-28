@@ -5,10 +5,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @EnableDiscoveryClient
 @SpringBootApplication
-public class ConfgMsApplication {
+public class ConfgServiceAplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ConfgMsApplication.class, args);
+        SpringApplication.run(ConfServiceAplication.class, args);
     }
 
 }

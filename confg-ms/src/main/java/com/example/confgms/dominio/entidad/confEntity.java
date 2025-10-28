@@ -4,7 +4,7 @@ package com.example.confgms.dominio.entidad;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "config")
+@Table(name = "confg")
 public class confEntity {
 
     @Id

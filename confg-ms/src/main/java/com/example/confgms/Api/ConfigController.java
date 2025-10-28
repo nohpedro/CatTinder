@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@Tag(name = "Config", description = "Operaciones principales del Config Service")
+@Tag(name = "Confg", description = "Operaciones principales del Config Service")
 @RestController
 @RequestMapping("/api/v1/config")
 public class ConfigController {
@@ -32,8 +32,6 @@ public class ConfigController {
         this.servicio = servicio;
         this.discoveryClient = discoveryClient;
     }
-
-    // -------------------- CREAR CONFIG --------------------
 
     @Operation(
             summary = "Crear configuración de un usuario",
@@ -164,9 +162,9 @@ public class ConfigController {
     )
     @GetMapping("/_instances")
     public Map<String, Object> instances() {
-        List<ServiceInstance> list = discoveryClient.getInstances("config-service");
+        List<ServiceInstance> list = discoveryClient.getInstances("confg-ms");
         return Map.of(
-                "serviceId", "config-service",
+                "serviceId", "confg-ms",
                 "count", list.size(),
                 "instances", list.stream().map(si -> Map.of(
                         "host", si.getHost(),
