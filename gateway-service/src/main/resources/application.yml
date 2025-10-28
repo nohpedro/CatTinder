@@ -24,6 +24,20 @@ spring:
             - Path=/swipe-service/v3/api-docs/**, /swipe-service/swagger-ui.html, /swipe-service/swagger-ui/**, /swipe-service/webjars/**, /swipe-service/swagger-resources/**
           filters:
             - StripPrefix=1
+        - id: confg-ms
+          uri: lb://CONFG-MS
+          predicates:
+              - Path=/confg-ms/**
+          filters:
+              - StripPrefix=1
+
+              # ==== OpenAPI/Swagger del Config MS (proxy) ====
+        - id: confg-ms-openapi
+          uri: lb://CONFG-MS
+          predicates:
+            - Path=/confg-ms/v3/api-docs/**, /confg-ms/swagger-ui.html, /confg-ms/swagger-ui/**, /confg-ms/webjars/**, /confg-ms/swagger-resources/**
+          filters:
+            - StripPrefix=1
 
 
       globalcors:
@@ -57,6 +71,8 @@ springdoc:
     urls:
       - name: SwipeService
         url: /swipe-service/v3/api-docs
+      - name: ConfigMS
+        url: /confg-ms/v3/api-docs
     disable-swagger-default-url: true
 
 logging:

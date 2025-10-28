@@ -4,7 +4,7 @@ services:
     environment:
       POSTGRES_DB: review-db
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD:
+      POSTGRES_PASSWORD: admin
     ports:
       - "5433:5432"
     volumes:
@@ -65,15 +65,17 @@ services:
     build:
       context: .
       dockerfile: confg-ms/Dockerfile
-    container_name: confg-ms
+    container_name: config-ms
     depends_on:
-      eureka:
-        condition: service_healthy
+      - postgres
+      - eureka
     environment:
-      SERVER_PORT: "18083"  # <-- igual que el puerto interno que exponemos
-      SPRING_PROFILES_ACTIVE: "prod-docker"
+      SERVER_PORT: "18083"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/review-db"
+      SPRING_DATASOURCE_USERNAME: "admin"
+      SPRING_DATASOURCE_PASSWORD: "admin"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
-      EUREKA_INSTANCE_HOSTNAME: "config-ms"
     ports:
       - "18083:18083"
 
