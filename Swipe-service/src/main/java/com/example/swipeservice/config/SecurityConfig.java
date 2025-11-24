@@ -13,21 +13,22 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
                 .csrf(csrf -> csrf.disable())
-
                 .authorizeHttpRequests(auth -> auth
+                        // Endpoints públicos (sin token)
                         .requestMatchers(
                                 "/actuator/health",
                                 "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html"
+                                "/swagger-ui.html",
+                                "/swagger-ui/**"
                         ).permitAll()
 
+                        // Todo lo demás requiere autenticación
                         .anyRequest().authenticated()
                 )
-
-                // Nueva forma recomendada en Spring Security 6.1+
+                // Resource Server que valida JWT de Keycloak
                 .oauth2ResourceServer(oauth2 ->
                         oauth2.jwt(Customizer.withDefaults())
                 );

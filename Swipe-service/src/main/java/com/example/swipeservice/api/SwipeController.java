@@ -9,8 +9,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
@@ -38,12 +38,16 @@ public class SwipeController {
         this.discoveryClient = discoveryClient;
     }
 
-    // -------------------- SWIPE PRINCIPAL --------------------
-
     @PostMapping(value = "/{actorId}/{targetId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(
+            summary = "Registrar un swipe",
+            description = "Procesa un swipe entre dos usuarios y retorna información de match.",
+            security = { @SecurityRequirement(name = "bearerAuth") }
+    )
     public ResponseEntity<?> hacerSwipe(@PathVariable String actorId,
                                         @PathVariable String targetId,
                                         @RequestBody SwipeDto body) {
+
         String matchId = servicio.procesarSwipeYQuizasMatch(actorId, targetId, body.getDir());
 
         if (matchId != null) {
@@ -57,17 +61,16 @@ public class SwipeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
-    // -------------------- MATCH EXISTENTE --------------------
-
     @Operation(
             summary = "Obtener match entre dos usuarios",
-            description = "Devuelve la información del match entre dos usuarios si existe.",
+            description = "Devuelve el match entre dos usuarios si existe.",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Match encontrado",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = MatchDto.class))),
-                    @ApiResponse(responseCode = "404", description = "No existe match entre los usuarios")
-            }
+                    @ApiResponse(responseCode = "404", description = "Match no encontrado")
+            },
+            security = { @SecurityRequirement(name = "bearerAuth") }
     )
     @GetMapping("/matches/{uidA}/{uidB}")
     public ResponseEntity<MatchDto> obtenerMatch(
@@ -80,48 +83,35 @@ public class SwipeController {
         }
         return ResponseEntity.ok(m);
     }
-    // -------------------- NATIVO: EXISTE MATCH --------------------
 
     @Operation(
-            summary = "Verificar si existe un match entre dos usuarios",
-            description = "Consulta nativa que retorna true/false si existe un match entre los usuarios especificados.",
+            summary = "Verificar si existe un match",
+            description = "Devuelve true o false dependiendo si existe un match entre u1 y u2.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Consulta exitosa",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(example = "{\"u1\":\"alex\",\"u2\":\"camila\",\"existe\":true}")))
-            }
+                    @ApiResponse(responseCode = "200", description = "Consulta exitosa")
+            },
+            security = { @SecurityRequirement(name = "bearerAuth") }
     )
     @GetMapping("/matches/existe")
     public Map<String, Object> existeMatch(
             @Parameter(description = "Usuario 1", example = "alex") @RequestParam String u1,
             @Parameter(description = "Usuario 2", example = "camila") @RequestParam String u2) {
+
         return Map.of("u1", u1, "u2", u2, "existe", servicio.existeMatch(u1, u2));
     }
 
-    // -------------------- PING (Health interno) --------------------
-
     @Operation(
-            summary = "Ping de salud del servicio",
-            description = "Devuelve un simple JSON indicando que el servicio está operativo.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Servicio activo",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(example = "{\"status\": \"UP\", \"source\": \"swipe-service\"}")))
-            }
+            summary = "Ping del servicio",
+            description = "Devuelve un JSON indicando el estado del servicio."
     )
     @GetMapping("/ping")
     public Map<String, Object> ping() {
         return Map.of("status", "UP", "source", "swipe-service");
     }
 
-    // -------------------- OPCIONAL: Diagnóstico de instancias Eureka --------------------
-
     @Operation(
-            summary = "Diagnóstico: instancias registradas en Eureka",
-            description = "Lista las instancias activas de 'swipe-service' detectadas por el cliente Eureka.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Instancias obtenidas correctamente")
-            }
+            summary = "Diagnóstico de instancias Eureka",
+            description = "Lista las instancias de swipe-service registradas en Eureka."
     )
     @GetMapping("/_instances")
     public Map<String, Object> instances() {
