@@ -10,7 +10,7 @@ spring:
     name: swipe-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/review-db
+    url: jdbc:postgresql://postgres:5432/review-db
     username: admin
     password: admin
 
@@ -25,8 +25,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          # Cuando corres el ms en local (sin Docker)
-          issuer-uri: http://localhost:8089/realms/swipes-realm
+          issuer-uri: http://keycloak:8080/realms/swipes-realm
 
 springdoc:
   api-docs:
@@ -37,14 +36,15 @@ springdoc:
 eureka:
   instance:
     preferIpAddress: true
-    hostname: localhost
+    hostname: swipe-service
     non-secure-port: ${server.port}
     instance-id: ${spring.application.name}:${server.port}
+
   client:
     register-with-eureka: true
     fetch-registry: true
-    serviceUrl:
-      defaultZone: http://localhost:8762/eureka/
+    service-url:
+      defaultZone: http://eureka:8762/eureka/
     registryFetchIntervalSeconds: 5
     initialInstanceInfoReplicationIntervalSeconds: 5
 

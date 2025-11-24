@@ -1,6 +1,10 @@
 version: "3.9"
 
 services:
+
+  # ===========================================
+  # POSTGRES PRINCIPAL DEL SWIPE-SERVICE
+  # ===========================================
   postgres:
     image: postgres:16-alpine
     environment:
@@ -12,18 +16,21 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
-  # Base de datos exclusiva para Keycloak
+  # ===========================================
+  # POSTGRES DE KEYCLOAK
+  # ===========================================
   keycloak-postgres:
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
       POSTGRES_PASSWORD: keycloak
-    # No es necesario exponer puerto hacia el host, solo lo usa Keycloak
     volumes:
       - keycloak_pgdata:/var/lib/postgresql/data
 
-  # Servidor Keycloak
+  # ===========================================
+  # KEYCLOAK SERVER (CON HOSTNAME FIJO)
+  # ===========================================
   keycloak:
     image: quay.io/keycloak/keycloak:25.0.1
     container_name: keycloak
@@ -31,16 +38,26 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+
       KC_DB: postgres
       KC_DB_URL_HOST: keycloak-postgres
       KC_DB_URL_DATABASE: keycloak
       KC_DB_USERNAME: keycloak
       KC_DB_PASSWORD: keycloak
+
+      # HOSTNAME FIJO PARA EMISIÓN DE TOKENS
+      KC_HOSTNAME: keycloak
+      KC_HOSTNAME_PORT: 8080
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+    ports:
+      - "8089:8080"
     depends_on:
       - keycloak-postgres
-    ports:
-      - "8089:8080"   # Keycloak accesible en http://localhost:8089
 
+  # ===========================================
+  # EUREKA SERVER
+  # ===========================================
   eureka:
     build:
       context: .
@@ -58,6 +75,9 @@ services:
       timeout: 3s
       retries: 30
 
+  # ===========================================
+  # API GATEWAY
+  # ===========================================
   gateway:
     build:
       context: .
@@ -70,16 +90,18 @@ services:
         condition: service_started
     environment:
       SERVER_PORT: "8082"
-      # Eureka dentro de la red de Docker
+
+      # Eureka interno
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
       EUREKA_INSTANCE_HOSTNAME: "gateway"
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
 
-      # Gateway como Resource Server (validando JWT de Keycloak) – opcional pero recomendado
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: "http://keycloak:8080/realms/swipes-realm"
     ports:
       - "8082:8082"
 
+  # ===========================================
+  # SWIPE SERVICE (MICROSERVICIO)
+  # ===========================================
   swipe-service:
     build:
       context: .
@@ -93,9 +115,6 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
 
-      # Override del issuer-uri cuando corre en Docker
-      # Dentro de la red Docker, Keycloak se ve como http://keycloak:8080
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: "http://keycloak:8080/realms/swipes-realm"
     depends_on:
       - postgres
       - eureka

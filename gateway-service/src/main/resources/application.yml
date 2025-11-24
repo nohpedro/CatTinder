@@ -4,10 +4,12 @@ server:
 spring:
   application:
     name: gateway-service
+
   cloud:
     gateway:
       default-filters:
         - AddResponseHeader=X-Gateway, OK
+
       routes:
         # ==== API del Swipe Service ====
         - id: swipe-service
@@ -17,7 +19,7 @@ spring:
           filters:
             - StripPrefix=1
 
-        # ==== OpenAPI/Swagger del SwipeService (proxy) ====
+        # ==== OpenAPI/Swagger del SwipeService ====
         - id: swipe-service-openapi
           uri: lb://SWIPE-SERVICE
           predicates:
@@ -25,7 +27,7 @@ spring:
           filters:
             - StripPrefix=1
 
-
+      # ==== CORS global ====
       globalcors:
         corsConfigurations:
           '[/**]':
