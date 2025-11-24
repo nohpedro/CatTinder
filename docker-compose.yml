@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -5,7 +7,39 @@ services:
       POSTGRES_DB: review-db
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-    ports: ["5433:5432"]
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # Base de datos exclusiva para Keycloak
+  keycloak-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    # No es necesario exponer puerto hacia el host, solo lo usa Keycloak
+    volumes:
+      - keycloak_pgdata:/var/lib/postgresql/data
+
+  # Servidor Keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.1
+    container_name: keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak-postgres
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+    depends_on:
+      - keycloak-postgres
+    ports:
+      - "8089:8080"   # Keycloak accesible en http://localhost:8089
 
   eureka:
     build:
@@ -19,7 +53,6 @@ services:
     ports:
       - "8762:8762"
     healthcheck:
-      # usa actuator si lo tienes:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8762/actuator/health"]
       interval: 5s
       timeout: 3s
@@ -33,13 +66,17 @@ services:
     depends_on:
       eureka:
         condition: service_healthy
+      keycloak:
+        condition: service_started
     environment:
       SERVER_PORT: "8082"
-      # MUY IMPORTANTE: en contenedores, apuntar a 'eureka' (nombre del servicio), no localhost
+      # Eureka dentro de la red de Docker
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
-      # opcional: identifica host/puerto para el registro
       EUREKA_INSTANCE_HOSTNAME: "gateway"
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+
+      # Gateway como Resource Server (validando JWT de Keycloak) – opcional pero recomendado
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: "http://keycloak:8080/realms/swipes-realm"
     ports:
       - "8082:8082"
 
@@ -47,6 +84,7 @@ services:
     build:
       context: .
       dockerfile: Swipe-service/Dockerfile
+    container_name: swipe-service
     environment:
       SERVER_PORT: "8081"
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/review-db"
@@ -54,8 +92,17 @@ services:
       SPRING_DATASOURCE_PASSWORD: "admin"
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
-    depends_on: ["postgres","eureka"]
-    ports: ["8081:8081"]
+
+      # Override del issuer-uri cuando corre en Docker
+      # Dentro de la red Docker, Keycloak se ve como http://keycloak:8080
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER-URI: "http://keycloak:8080/realms/swipes-realm"
+    depends_on:
+      - postgres
+      - eureka
+      - keycloak
+    ports:
+      - "8081:8081"
 
 volumes:
   pgdata:
+  keycloak_pgdata:

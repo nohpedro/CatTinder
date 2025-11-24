@@ -1,6 +1,6 @@
 server:
   port: 8081
-  forward-headers-strategy: framework   # respeta X-Forwarded-* del gateway
+  forward-headers-strategy: framework
   error:
     include-message: always
     include-binding-errors: always
@@ -20,6 +20,17 @@ spring:
     show-sql: true
     properties:
       hibernate.format_sql: true
+
+  # ============================================
+  # INTEGRACIÓN CON KEYCLOAK (RESOURCE SERVER)
+  # ============================================
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # URL del issuer del realm en Keycloak
+          # http://<host-keycloak>:<puerto>/realms/<nombre-realm>
+          issuer-uri: http://localhost:8089/realms/swipes-realm
 
 springdoc:
   api-docs:
