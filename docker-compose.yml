@@ -7,19 +7,40 @@ services:
       POSTGRES_PASSWORD: admin
     ports: ["5433:5432"]
 
+  config-server:
+    build:
+      context: .
+      dockerfile: config-server/Dockerfile
+    container_name: config-server
+    environment:
+      SERVER_PORT: "8888"
+      SPRING_APPLICATION_NAME: "config-server"
+      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: "https://github.com/nohpedro/config-swipe"
+      SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL: "main"
+    ports:
+      - "8888:8888"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8888/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
   eureka:
     build:
       context: .
       dockerfile: eureka-server/Dockerfile
     container_name: eureka
+    depends_on:
+      config-server:
+        condition: service_healthy
     environment:
       SERVER_PORT: "8762"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
       EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"
       EUREKA_CLIENT_FETCH_REGISTRY: "false"
     ports:
       - "8762:8762"
     healthcheck:
-      # usa actuator si lo tienes:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8762/actuator/health"]
       interval: 5s
       timeout: 3s
@@ -35,9 +56,7 @@ services:
         condition: service_healthy
     environment:
       SERVER_PORT: "8082"
-      # MUY IMPORTANTE: en contenedores, apuntar a 'eureka' (nombre del servicio), no localhost
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
-      # opcional: identifica host/puerto para el registro
       EUREKA_INSTANCE_HOSTNAME: "gateway"
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
     ports:
@@ -47,14 +66,16 @@ services:
     build:
       context: .
       dockerfile: Swipe-service/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_started
+      eureka:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
     environment:
       SERVER_PORT: "8081"
-      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/review-db"
-      SPRING_DATASOURCE_USERNAME: "admin"
-      SPRING_DATASOURCE_PASSWORD: "admin"
-      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
-    depends_on: ["postgres","eureka"]
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
     ports: ["8081:8081"]
 
 volumes:
