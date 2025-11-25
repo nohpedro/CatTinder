@@ -5,18 +5,19 @@ spring:
   application:
     name: config-server
 
-  profiles:
-    active: native   # de momento usaremos el modo "native" (carpeta local)
-
   cloud:
     config:
       server:
-        native:
-          # Aquí buscaremos los .yml de config (en la siguiente parte los llenamos)
-          search-locations: classpath:/configs
+        git:
+          uri: https://github.com/nohpedro/config-swipe
+          default-label: main
+          force-pull: true
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,env,refresh
+
+encrypt:
+  key: miClaveSuperSecreta123
