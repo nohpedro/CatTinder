@@ -4,10 +4,21 @@ server:
 spring:
   application:
     name: gateway-service
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Para local SIN docker cambia a: http://localhost:8090/realms/swipes-realm
+          issuer-uri: http://keycloak:8090/realms/swipes-realm
+          # opcional (normalmente se resuelve solo desde issuer-uri)
+          jwk-set-uri: http://keycloak:8090/realms/swipes-realm/protocol/openid-connect/certs
+
   cloud:
     gateway:
       default-filters:
         - AddResponseHeader=X-Gateway, OK
+
       routes:
         # ==== API del Swipe Service ====
         - id: swipe-service
@@ -24,7 +35,6 @@ spring:
             - Path=/swipe-service/v3/api-docs/**, /swipe-service/swagger-ui.html, /swipe-service/swagger-ui/**, /swipe-service/webjars/**, /swipe-service/swagger-resources/**
           filters:
             - StripPrefix=1
-
 
       globalcors:
         corsConfigurations:
@@ -48,6 +58,8 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
+      # Para Docker debe apuntar a 'eureka', pero ya lo sobreescribes
+      # con la env EUREKA_CLIENT_SERVICEURL_DEFAULTZONE en docker-compose.
       defaultZone: http://localhost:8762/eureka
 
 springdoc:
