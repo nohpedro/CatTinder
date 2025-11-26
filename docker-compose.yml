@@ -10,6 +10,25 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  # ================== CONFIG SERVER ==================
+  config-server:
+    build:
+      context: .
+      dockerfile: config-server/Dockerfile
+    container_name: config-server
+    environment:
+      SERVER_PORT: "8888"                           # puerto interno del micro
+      SPRING_APPLICATION_NAME: "config-server"
+      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: "https://github.com/nohpedro/config-swipe"
+      SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL: "main"
+    ports:
+      - "18888:8888"                                # EXTERNO:INTERNO
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8888/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
   eureka:
     build:
       context: .
@@ -35,11 +54,14 @@ services:
     depends_on:
       eureka:
         condition: service_healthy
+      config-server:
+        condition: service_healthy
     environment:
       SERVER_PORT: "18082"  # <-- igual que el puerto interno que exponemos
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
       EUREKA_INSTANCE_HOSTNAME: "gateway"
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
     ports:
       - "18082:18082"
 
@@ -49,8 +71,12 @@ services:
       dockerfile: Swipe-service/Dockerfile
     container_name: swipe-service
     depends_on:
-      - postgres
-      - eureka
+      postgres:
+        condition: service_started
+      eureka:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
     environment:
       SERVER_PORT: "18081"  # <-- igual que el puerto interno que exponemos
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/review-db"
@@ -58,6 +84,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: "admin"
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
     ports:
       - "18081:18081"
 
@@ -67,8 +94,12 @@ services:
       dockerfile: confg-ms/Dockerfile
     container_name: config-ms
     depends_on:
-      - postgres
-      - eureka
+      postgres:
+        condition: service_started
+      eureka:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
     environment:
       SERVER_PORT: "18083"
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/review-db"
@@ -76,6 +107,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: "admin"
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
     ports:
       - "18083:18083"
 

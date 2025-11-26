@@ -1,6 +1,6 @@
 server:
   port: 8085
-  forward-headers-strategy: framework   # respeta X-Forwarded-* del gateway
+  forward-headers-strategy: framework
   error:
     include-message: always
     include-binding-errors: always
@@ -26,6 +26,7 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui/index.html
+
 eureka:
   instance:
     preferIpAddress: true

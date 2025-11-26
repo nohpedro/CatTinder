@@ -1,0 +1,28 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/ElNegis/cat-tinder-config-repo
+          default-label: main
+          clone-on-start: true
+          force-pull: true
+          # Si tu repo es privado:
+          # username: TU_USUARIO
+          # password: TU_TOKEN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,refresh
+
+
+encrypt:
+  key: secretPass123
