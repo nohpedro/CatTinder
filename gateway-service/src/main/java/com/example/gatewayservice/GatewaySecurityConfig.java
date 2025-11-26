@@ -1,4 +1,4 @@
-package tu.paquete.config;
+package com.example.gatewayservice;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

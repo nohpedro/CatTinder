@@ -5,12 +5,12 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- ✅ Parent de Spring Boot: enlaza spring-boot-maven-plugin (repackage) -->
+    <!-- Parent de Spring Boot -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.4.1</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
 
     <groupId>com.example</groupId>
@@ -22,11 +22,11 @@
 
     <properties>
         <java.version>17</java.version>
-        <!-- Spring Cloud 2024.0.x es compatible con Boot 3.4.x -->
+        <!-- Spring Cloud 2024.0.x compatible con Boot 3.4.x -->
         <spring.cloud.version>2024.0.0</spring.cloud.version>
     </properties>
 
-    <!-- ✅ Solo gestionamos Spring Cloud aquí; Spring Boot lo gestiona el parent -->
+    <!-- SOLO el BOM de Spring Cloud aquí -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -40,41 +40,51 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Gateway + WebFlux -->
+        <!-- WebFlux -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
+
+        <!-- Spring Cloud Gateway -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>
 
-        <!-- Eureka Client (para lb://SERVICE-ID) -->
+        <!-- Resource Server JWT (Keycloak) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
+        <!-- Eureka Client -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
-        <!-- Actuator (health, métricas, etc.) -->
+        <!-- Actuator -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- Swagger UI opcional en el gateway -->
+        <!-- Swagger/OpenAPI para WebFlux (si lo usas en el gateway) -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
             <version>2.6.0</version>
         </dependency>
 
+        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
+        <!-- Tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -84,7 +94,6 @@
 
     <build>
         <plugins>
-            <!-- 👇 No hace falta versión ni executions; el parent ya enlaza `repackage` -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
