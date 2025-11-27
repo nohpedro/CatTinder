@@ -20,4 +20,4 @@ management:
         include: health,info,env,refresh
 
 encrypt:
-  key: miClaveSuperSecreta123
+  key: pass123456
