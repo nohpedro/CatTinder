@@ -53,7 +53,7 @@ services:
       SERVER_PORT: "8888"
       SPRING_APPLICATION_NAME: "config-server"
       SPRING_PROFILES_ACTIVE: ""
-      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: "https://github.com/nohpedro/config-swipe"
+      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: "https://github.com/ElNegis/cat-tinder-config-repo"
       SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL: "main"
     ports:
       - "8888:8888"

@@ -8,7 +8,7 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/nohpedro/config-swipe
+          uri: https://github.com/ElNegis/cat-tinder-config-repo
           default-label: main
           force-pull: true
           clone-on-start: true
