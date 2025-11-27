@@ -10,6 +10,8 @@ spring:
     name: swipe-service
 
   datasource:
+    # OJO: esto es para correr local.
+    # En Docker deberías usar jdbc:postgresql://postgres:5432/review-db
     url: jdbc:postgresql://localhost:5433/review-db
     username: admin
     password: admin
@@ -21,12 +23,20 @@ spring:
     properties:
       hibernate.format_sql: true
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # En Docker:
+          issuer-uri: http://localhost:8090/realms/swipes-realm
+          # opcional:
+          jwk-set-uri: http://localhost:8090/realms/swipes-realm/protocol/openid-connect/certs
+
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui/index.html
-    # si solo usarás el UI del micro por el gateway, puedes ayudarle con:
     # config-url: /swipe-service/v3/api-docs/swagger-config
 
 eureka:
@@ -39,6 +49,7 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     serviceUrl:
+      # En Docker se sobreescribe con env EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
       defaultZone: http://localhost:8762/eureka/
     registryFetchIntervalSeconds: 5
     initialInstanceInfoReplicationIntervalSeconds: 5

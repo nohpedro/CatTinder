@@ -4,15 +4,14 @@ server:
 spring:
   application:
     name: config-server
-
   cloud:
     config:
       server:
         git:
-          uri: https://github.com/ElNegis/cat-tinder-config-repo
+          uri: https://github.com/nohpedro/config-swipe
           default-label: main
-          clone-on-start: true
           force-pull: true
+          clone-on-start: true
 
 management:
   endpoints:
@@ -20,6 +19,5 @@ management:
       exposure:
         include: health,info,env,refresh
 
-
 encrypt:
-  key: secretPass123
+  key: miClaveSuperSecreta123
