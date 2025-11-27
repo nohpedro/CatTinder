@@ -47,7 +47,9 @@ function App() {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${freshToken}`,
                     },
-                    // body: JSON.stringify({ ... })  // si tu endpoint espera body
+                    body: JSON.stringify({
+                        dir: "like",   // 👈 lo que espera tu SwipeDto
+                    }),
                 }
             );
 
