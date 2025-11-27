@@ -4,8 +4,6 @@ server:
 spring:
   application:
     name: config-server
-  profiles:
-    active: native
   cloud:
     config:
       server:
@@ -13,6 +11,7 @@ spring:
           uri: https://github.com/nohpedro/config-swipe
           default-label: main
           force-pull: true
+          clone-on-start: true
 
 management:
   endpoints:

@@ -49,12 +49,13 @@ services:
     environment:
       SERVER_PORT: "8888"
       SPRING_APPLICATION_NAME: "config-server"
+      SPRING_PROFILES_ACTIVE: ""
       SPRING_CLOUD_CONFIG_SERVER_GIT_URI: "https://github.com/nohpedro/config-swipe"
       SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL: "main"
     ports:
       - "8888:8888"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8888/actuator/health"]
+      test: [ "CMD", "wget", "-qO-", "http://127.0.0.1:8888/actuator/health" ]
       interval: 5s
       timeout: 3s
       retries: 30
