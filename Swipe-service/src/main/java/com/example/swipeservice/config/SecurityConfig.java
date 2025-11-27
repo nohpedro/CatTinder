@@ -18,7 +18,6 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
 
             .authorizeHttpRequests(auth -> auth
-                // Actuator (puedes restringirlo si quieres)
                 .requestMatchers("/actuator/**").permitAll()
 
                 // Swagger del micro
