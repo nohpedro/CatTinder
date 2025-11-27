@@ -24,7 +24,14 @@ public class GatewaySecurityConfig {
                 .pathMatchers("/actuator/**").permitAll()
 
                 // Si algún día expones Swagger propio del gateway:
-                .pathMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                    .pathMatchers(
+                            "/swipe-service/swagger-ui/**",
+                            "/swipe-service/swagger-ui.html",
+                            "/swipe-service/v3/api-docs/**",
+                            "/confg-ms/swagger-ui/**",
+                            "/confg-ms/swagger-ui.html",
+                            "/confg-ms/v3/api-docs/**"
+                    ).permitAll()
 
                 // Todo lo demás requiere JWT válido
                 .anyExchange().authenticated()
