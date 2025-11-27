@@ -10,9 +10,9 @@ spring:
       resourceserver:
         jwt:
           # Para local SIN docker cambia a: http://localhost:8090/realms/swipes-realm
-          issuer-uri: http://localhost:8090/realms/swipes-realm
+          issuer-uri: http://localhost:8090/realms/confi-realm
           # opcional (normalmente se resuelve solo desde issuer-uri)
-          jwk-set-uri: http://localhost:8090/realms/swipes-realm/protocol/openid-connect/certs
+          jwk-set-uri: http://localhost:8090/realms/confi-realm/protocol/openid-connect/certs
 
   cloud:
     gateway:
