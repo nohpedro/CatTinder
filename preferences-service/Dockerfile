@@ -5,9 +5,11 @@ WORKDIR /app
 
 COPY pom.xml .
 COPY api-gateway/pom.xml api-gateway/pom.xml
+COPY config-server/pom.xml config-server/pom.xml
 COPY eureka-server/pom.xml eureka-server/pom.xml
 COPY users-service/pom.xml users-service/pom.xml
 COPY preferences-service/pom.xml preferences-service/pom.xml
+COPY intereses-service/pom.xml intereses-service/pom.xml
 
 RUN mvn -q -T 1C -e -U dependency:go-offline
 
@@ -22,13 +24,6 @@ WORKDIR /app
 
 COPY --from=build /app/preferences-service/target/preferences-service-1.0.0.jar app.jar
 
-# este servicio sí lo vimos en logs corriendo en 8082
 EXPOSE 8082
-
-ENV EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka
-
-ENV SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/cattinder
-ENV SPRING_DATASOURCE_USERNAME=postgres
-ENV SPRING_DATASOURCE_PASSWORD=postgres
 
 ENTRYPOINT ["java","-jar","/app/app.jar"]

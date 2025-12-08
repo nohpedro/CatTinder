@@ -13,15 +13,72 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+    ports:
+      - "8180:8080"
+    networks:
+      - cattinder-net
+    depends_on:
+      - keycloak-db
+    command: start-dev
+
+  config-server:
+    build:
+      context: .
+      dockerfile: config-server/Dockerfile
+    container_name: config-server
+    environment:
+      CONFIG_GIT_URI: https://github.com/NycKev/service-nyc.git
+      CONFIG_GIT_BRANCH: main
+      CONFIG_SERVER_USER: configuser
+      CONFIG_SERVER_PASSWORD: configpass
+      CONFIG_ENCRYPT_KEY: catTinderSuperSecretKey
+    ports:
+      - "8888:8888"
+    # Sin volumen local - lee directamente desde GitHub
+    networks:
+      - cattinder-net
+    restart: unless-stopped
+
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: keycloak-db
+    environment:
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+      POSTGRES_DB: keycloak
+    volumes:
+      - keycloak-data:/var/lib/postgresql/data
+    networks:
+      - cattinder-net
+
   eureka-server:
     build:
       context: .
       dockerfile: eureka-server/Dockerfile
     container_name: eureka-server
+    environment:
+      CONFIG_SERVER_URI: http://config-server:8888
+      CONFIG_SERVER_USER: configuser
+      CONFIG_SERVER_PASSWORD: configpass
+      CONFIG_SERVER_LABEL: main
     ports:
       - "8761:8761"
     networks:
       - cattinder-net
+    depends_on:
+      - config-server
 
   users-service:
     build:
@@ -29,14 +86,17 @@ services:
       dockerfile: users-service/Dockerfile
     container_name: users-service
     depends_on:
+      - config-server
       - postgres
       - eureka-server
+      - keycloak
     environment:
-      # override por si no quieres usar ENV del Dockerfile
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cattinder
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      CONFIG_SERVER_URI: http://config-server:8888
+      CONFIG_SERVER_USER: configuser
+      CONFIG_SERVER_PASSWORD: configpass
+      CONFIG_SERVER_LABEL: main
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: cattinder
     ports:
       - "8081:8081"
     networks:
@@ -48,13 +108,17 @@ services:
       dockerfile: preferences-service/Dockerfile
     container_name: preferences-service
     depends_on:
+      - config-server
       - postgres
       - eureka-server
+      - keycloak
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cattinder
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      CONFIG_SERVER_URI: http://config-server:8888
+      CONFIG_SERVER_USER: configuser
+      CONFIG_SERVER_PASSWORD: configpass
+      CONFIG_SERVER_LABEL: main
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: cattinder
     ports:
       - "8082:8082"
     networks:
@@ -66,13 +130,42 @@ services:
       dockerfile: api-gateway/Dockerfile
     container_name: api-gateway
     depends_on:
+      - config-server
       - eureka-server
       - users-service
       - preferences-service
+      - intereses-service
     environment:
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      CONFIG_SERVER_URI: http://config-server:8888
+      CONFIG_SERVER_USER: configuser
+      CONFIG_SERVER_PASSWORD: configpass
+      CONFIG_SERVER_LABEL: main
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: cattinder
     ports:
-      - "8083:8083"
+      - "9000:9000"
+    networks:
+      - cattinder-net
+
+  intereses-service:
+    build:
+      context: .
+      dockerfile: intereses-service/Dockerfile
+    container_name: intereses-service
+    depends_on:
+      - config-server
+      - postgres
+      - eureka-server
+      - keycloak
+    environment:
+      CONFIG_SERVER_URI: http://config-server:8888
+      CONFIG_SERVER_USER: configuser
+      CONFIG_SERVER_PASSWORD: configpass
+      CONFIG_SERVER_LABEL: main
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: cattinder
+    ports:
+      - "8084:8084"
     networks:
       - cattinder-net
 
@@ -82,3 +175,4 @@ networks:
 
 volumes:
   pgdata:
+  keycloak-data:

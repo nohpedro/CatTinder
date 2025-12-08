@@ -1,0 +1,1237 @@
+{
+	"info": {
+		"_postman_id": "cattinder-api-collection-2025",
+		"name": "CatTinder - Microservicios API",
+		"description": "Colección completa de endpoints para los microservicios de CatTinder (Users, Preferences, Intereses). Incluye autenticación JWT con Keycloak.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "cattinder-team"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "0. Authentication (Keycloak)",
+			"item": [
+				{
+					"name": "Get Token - USER Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"access_token\", jsonData.access_token);",
+									"pm.collectionVariables.set(\"refresh_token\", jsonData.refresh_token);",
+									"console.log(\"Token guardado: \" + jsonData.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "users-service",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "testuser",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "testpass",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+							"host": [
+								"{{keycloak_url}}"
+							],
+							"path": [
+								"realms",
+								"{{realm}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						},
+						"description": "Obtiene un token JWT para un usuario con rol USER"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Token - ADMIN Role",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"access_token\", jsonData.access_token);",
+									"pm.collectionVariables.set(\"refresh_token\", jsonData.refresh_token);",
+									"console.log(\"Token ADMIN guardado: \" + jsonData.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "users-service",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "adminuser",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "adminpass",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+							"host": [
+								"{{keycloak_url}}"
+							],
+							"path": [
+								"realms",
+								"{{realm}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						},
+						"description": "Obtiene un token JWT para un usuario con rol ADMIN"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"access_token\", jsonData.access_token);",
+									"pm.collectionVariables.set(\"refresh_token\", jsonData.refresh_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "refresh_token",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "users-service",
+									"type": "text"
+								},
+								{
+									"key": "refresh_token",
+									"value": "{{refresh_token}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+							"host": [
+								"{{keycloak_url}}"
+							],
+							"path": [
+								"realms",
+								"{{realm}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						},
+						"description": "Refresca el token usando el refresh_token"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para autenticación con Keycloak"
+		},
+		{
+			"name": "1. Users Service",
+			"item": [
+				{
+					"name": "Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"user_id\", jsonData.id);",
+									"console.log(\"Usuario creado con ID: \" + jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"Gatito Pérez\",\n    \"email\": \"gatito@example.com\",\n    \"edad\": 2,\n    \"biografia\": \"Soy un gato muy lindo y juguetón\",\n    \"ubicacion\": \"Buenos Aires, Argentina\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/users/api/v1/users",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"users",
+								"api",
+								"v1",
+								"users"
+							]
+						},
+						"description": "Crea un nuevo usuario (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/users/api/v1/users",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"users",
+								"api",
+								"v1",
+								"users"
+							]
+						},
+						"description": "Obtiene todos los usuarios (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/users/api/v1/users/{{user_id}}",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"users",
+								"api",
+								"v1",
+								"users",
+								"{{user_id}}"
+							]
+						},
+						"description": "Obtiene un usuario por su ID (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Active Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/users/api/v1/users/active",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"users",
+								"api",
+								"v1",
+								"users",
+								"active"
+							]
+						},
+						"description": "Obtiene solo los usuarios activos (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Users by Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/users/api/v1/users/search?nombre=gatito",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"users",
+								"api",
+								"v1",
+								"users",
+								"search"
+							],
+							"query": [
+								{
+									"key": "nombre",
+									"value": "gatito"
+								}
+							]
+						},
+						"description": "Busca usuarios por nombre (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Count Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/users/api/v1/users/count",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"users",
+								"api",
+								"v1",
+								"users",
+								"count"
+							]
+						},
+						"description": "Obtiene el total de usuarios (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"Gatito Pérez Actualizado\",\n    \"email\": \"gatito.updated@example.com\",\n    \"edad\": 3,\n    \"biografia\": \"Soy un gato muy lindo, juguetón y ahora más grande\",\n    \"ubicacion\": \"Córdoba, Argentina\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/users/api/v1/users/{{user_id}}",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"users",
+								"api",
+								"v1",
+								"users",
+								"{{user_id}}"
+							]
+						},
+						"description": "Actualiza un usuario (Requiere rol ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Deactivate User",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/users/api/v1/users/{{user_id}}/active?active=false",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"users",
+								"api",
+								"v1",
+								"users",
+								"{{user_id}}",
+								"active"
+							],
+							"query": [
+								{
+									"key": "active",
+									"value": "false"
+								}
+							]
+						},
+						"description": "Desactiva un usuario (Requiere rol ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Activate User",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/users/api/v1/users/{{user_id}}/active?active=true",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"users",
+								"api",
+								"v1",
+								"users",
+								"{{user_id}}",
+								"active"
+							],
+							"query": [
+								{
+									"key": "active",
+									"value": "true"
+								}
+							]
+						},
+						"description": "Activa un usuario (Requiere rol ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/users/api/v1/users/{{user_id}}",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"users",
+								"api",
+								"v1",
+								"users",
+								"{{user_id}}"
+							]
+						},
+						"description": "Elimina un usuario (Requiere rol ADMIN)"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints del microservicio de Users"
+		},
+		{
+			"name": "2. Preferences Service",
+			"item": [
+				{
+					"name": "Create Preference",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"preference_id\", jsonData.id);",
+									"console.log(\"Preferencia creada con ID: \" + jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": {{user_id}},\n    \"rangoEdadMin\": 1,\n    \"rangoEdadMax\": 5,\n    \"distanciaMaxima\": 10,\n    \"razaPreferida\": \"Persa\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/preferences/api/v1/preferences",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"preferences",
+								"api",
+								"v1",
+								"preferences"
+							]
+						},
+						"description": "Crea una nueva preferencia (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Preferences",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/preferences/api/v1/preferences",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"preferences",
+								"api",
+								"v1",
+								"preferences"
+							]
+						},
+						"description": "Obtiene todas las preferencias (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Preference by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/preferences/api/v1/preferences/{{preference_id}}",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"preferences",
+								"api",
+								"v1",
+								"preferences",
+								"{{preference_id}}"
+							]
+						},
+						"description": "Obtiene una preferencia por su ID (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Preferences by User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/preferences/api/v1/preferences/user/{{user_id}}",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"preferences",
+								"api",
+								"v1",
+								"preferences",
+								"user",
+								"{{user_id}}"
+							]
+						},
+						"description": "Obtiene todas las preferencias de un usuario (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Preference",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": {{user_id}},\n    \"rangoEdadMin\": 2,\n    \"rangoEdadMax\": 6,\n    \"distanciaMaxima\": 15,\n    \"razaPreferida\": \"Maine Coon\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/preferences/api/v1/preferences/{{preference_id}}",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"preferences",
+								"api",
+								"v1",
+								"preferences",
+								"{{preference_id}}"
+							]
+						},
+						"description": "Actualiza una preferencia (Requiere rol ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Preference",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/preferences/api/v1/preferences/{{preference_id}}",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"preferences",
+								"api",
+								"v1",
+								"preferences",
+								"{{preference_id}}"
+							]
+						},
+						"description": "Elimina una preferencia (Requiere rol ADMIN)"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints del microservicio de Preferences"
+		},
+		{
+			"name": "3. Intereses Service",
+			"item": [
+				{
+					"name": "Create Interest",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set(\"interest_id\", jsonData.id);",
+									"console.log(\"Interés creado con ID: \" + jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"Jugar con pelotas\",\n    \"descripcion\": \"Me encanta perseguir pelotas de lana\",\n    \"userId\": {{user_id}}\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/intereses/api/v1/interests",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"intereses",
+								"api",
+								"v1",
+								"interests"
+							]
+						},
+						"description": "Crea un nuevo interés (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Interests",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/intereses/api/v1/interests",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"intereses",
+								"api",
+								"v1",
+								"interests"
+							]
+						},
+						"description": "Obtiene todos los intereses (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Interest by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/intereses/api/v1/interests/{{interest_id}}",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"intereses",
+								"api",
+								"v1",
+								"interests",
+								"{{interest_id}}"
+							]
+						},
+						"description": "Obtiene un interés por su ID (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Interests by User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/intereses/api/v1/interests/user/{{user_id}}",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"intereses",
+								"api",
+								"v1",
+								"interests",
+								"user",
+								"{{user_id}}"
+							]
+						},
+						"description": "Obtiene todos los intereses de un usuario (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Interests by Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/intereses/api/v1/interests/search?nombre=jugar",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"intereses",
+								"api",
+								"v1",
+								"interests",
+								"search"
+							],
+							"query": [
+								{
+									"key": "nombre",
+									"value": "jugar"
+								}
+							]
+						},
+						"description": "Busca intereses por nombre (Requiere rol USER o ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Interest",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nombre\": \"Jugar con pelotas grandes\",\n    \"descripcion\": \"Me encantan especialmente las pelotas grandes de lana\",\n    \"userId\": {{user_id}}\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/intereses/api/v1/interests/{{interest_id}}",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"intereses",
+								"api",
+								"v1",
+								"interests",
+								"{{interest_id}}"
+							]
+						},
+						"description": "Actualiza un interés (Requiere rol ADMIN)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Interest",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/intereses/api/v1/interests/{{interest_id}}",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"intereses",
+								"api",
+								"v1",
+								"interests",
+								"{{interest_id}}"
+							]
+						},
+						"description": "Elimina un interés (Requiere rol ADMIN)"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints del microservicio de Intereses (NUEVO)"
+		},
+		{
+			"name": "4. Health Checks",
+			"item": [
+				{
+					"name": "Gateway Health",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/actuator/health",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						},
+						"description": "Verifica el estado del API Gateway"
+					},
+					"response": []
+				},
+				{
+					"name": "Users Service Health",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/actuator/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"actuator",
+								"health"
+							]
+						},
+						"description": "Verifica el estado del Users Service"
+					},
+					"response": []
+				},
+				{
+					"name": "Preferences Service Health",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8082/actuator/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"actuator",
+								"health"
+							]
+						},
+						"description": "Verifica el estado del Preferences Service"
+					},
+					"response": []
+				},
+				{
+					"name": "Intereses Service Health",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/actuator/health",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"actuator",
+								"health"
+							]
+						},
+						"description": "Verifica el estado del Intereses Service"
+					},
+					"response": []
+				},
+				{
+					"name": "Eureka Dashboard",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8761",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8761"
+						},
+						"description": "Verifica el estado de Eureka y servicios registrados"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para verificar el estado de los servicios"
+		},
+		{
+			"name": "5. Complete Workflows",
+			"item": [
+				{
+					"name": "Create Complete User Profile",
+					"item": [
+						{
+							"name": "Step 1 - Create User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = pm.response.json();",
+											"pm.collectionVariables.set(\"workflow_user_id\", jsonData.id);"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"nombre\": \"Luna García\",\n    \"email\": \"luna@example.com\",\n    \"edad\": 4,\n    \"biografia\": \"Soy una gata elegante y cariñosa\",\n    \"ubicacion\": \"Madrid, España\"\n}"
+								},
+								"url": {
+									"raw": "{{gateway_url}}/users/api/v1/users",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"users",
+										"api",
+										"v1",
+										"users"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Step 2 - Create Preferences",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"userId\": {{workflow_user_id}},\n    \"rangoEdadMin\": 3,\n    \"rangoEdadMax\": 6,\n    \"distanciaMaxima\": 20,\n    \"razaPreferida\": \"Siamés\"\n}"
+								},
+								"url": {
+									"raw": "{{gateway_url}}/preferences/api/v1/preferences",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"preferences",
+										"api",
+										"v1",
+										"preferences"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Step 3 - Create Interest 1",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"nombre\": \"Dormir al sol\",\n    \"descripcion\": \"Me encanta tomar siestas bajo el sol\",\n    \"userId\": {{workflow_user_id}}\n}"
+								},
+								"url": {
+									"raw": "{{gateway_url}}/intereses/api/v1/interests",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"intereses",
+										"api",
+										"v1",
+										"interests"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Step 4 - Create Interest 2",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"nombre\": \"Cazar insectos\",\n    \"descripcion\": \"Me fascina cazar moscas y mariposas\",\n    \"userId\": {{workflow_user_id}}\n}"
+								},
+								"url": {
+									"raw": "{{gateway_url}}/intereses/api/v1/interests",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"intereses",
+										"api",
+										"v1",
+										"interests"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Step 5 - Get Complete Profile",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gateway_url}}/users/api/v1/users/{{workflow_user_id}}",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"users",
+										"api",
+										"v1",
+										"users",
+										"{{workflow_user_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			],
+			"description": "Flujos completos de prueba"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "gateway_url",
+			"value": "http://localhost:8083",
+			"type": "string"
+		},
+		{
+			"key": "users_url",
+			"value": "http://localhost:8081",
+			"type": "string"
+		},
+		{
+			"key": "preferences_url",
+			"value": "http://localhost:8082",
+			"type": "string"
+		},
+		{
+			"key": "intereses_url",
+			"value": "http://localhost:8084",
+			"type": "string"
+		},
+		{
+			"key": "keycloak_url",
+			"value": "http://localhost:8180",
+			"type": "string"
+		},
+		{
+			"key": "realm",
+			"value": "cattinder",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "preference_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "interest_id",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "workflow_user_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}
+

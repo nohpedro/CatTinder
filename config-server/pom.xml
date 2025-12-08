@@ -2,65 +2,51 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Hereda BOMs y configuración del padre -->
     <parent>
         <groupId>com.example</groupId>
         <artifactId>cattinder-platform</artifactId>
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>eureka-server</artifactId>
-    <name>CatTinder - Eureka Server</name>
-    <description>Service Discovery / Registry para los microservicios CatTinder</description>
+    <artifactId>config-server</artifactId>
+    <name>CatTinder - Config Server</name>
+    <description>Spring Cloud Config Server central para CatTinder</description>
 
     <dependencies>
-        <!-- Eureka Server -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+            <artifactId>spring-cloud-config-server</artifactId>
         </dependency>
 
-        <!-- Web (para servir dashboard de Eureka en 8761) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <!-- Actuator (endpoints /actuator/health etc) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-config</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-        <!-- VALIDACIÓN Jakarta (a veces Eureka se queja si no hay provider de Bean Validation).
-             Hibernate Validator es el provider estándar. Metemos esto para ir seguros.
-        -->
-        <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
-        </dependency>
-
-        <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!-- para ejecutar el módulo con mvn spring-boot:run -->
+            <!-- Plugin Spring Boot para generar JAR ejecutable con Main-Class -->
+            <!-- Este plugin reemplaza el JAR estándar con un JAR ejecutable "fat JAR" -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.example.configserver.ConfigServerApplication</mainClass>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -70,6 +56,7 @@
                 </executions>
             </plugin>
 
+            <!-- Plugin de compilación -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -83,10 +70,10 @@
                     </compilerArgs>
                 </configuration>
             </plugin>
-
-
         </plugins>
-
     </build>
 
 </project>
+
+
+

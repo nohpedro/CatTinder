@@ -1,0 +1,48 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  security:
+    user:
+      name: ${CONFIG_SERVER_USER:configuser}
+      password: ${CONFIG_SERVER_PASSWORD:configpass}
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${CONFIG_GIT_URI:https://github.com/NycKev/service-nyc.git}
+          default-label: ${CONFIG_GIT_BRANCH:main}
+          clone-on-start: true
+          force-pull: true
+          search-paths: ${CONFIG_GIT_SEARCH_PATHS:.}
+          skip-ssl-validation: false
+          timeout: 10
+          basedir: /tmp/config-repo
+          # Repositorio público, no requiere credenciales
+          username: ${CONFIG_GIT_USERNAME:}
+          password: ${CONFIG_GIT_PASSWORD:}
+          # Forzar uso de main, no intentar master como fallback
+          try-master-branch: false
+
+logging:
+  level:
+    org.springframework.cloud.config.server: INFO
+    org.springframework.cloud.config.server.environment: DEBUG
+    org.springframework.cloud.config.server.environment.MultipleJGitEnvironmentRepository: DEBUG
+    org.springframework.cloud.config.server.environment.JGitEnvironmentRepository: DEBUG
+    org.springframework.cloud.config.server.environment.AbstractScmEnvironmentRepository: DEBUG
+    org.eclipse.jgit: INFO
+    org.eclipse.jgit.transport: DEBUG
+    root: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+encrypt:
+  key: ${CONFIG_ENCRYPT_KEY:catTinderSuperSecretKey}
+

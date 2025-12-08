@@ -1,0 +1,54 @@
+@baseUrl = http://localhost:9000
+@authBase = http://localhost:8180
+@realm = cattinder
+@clientId = interests-service
+@clientSecret = LM6VSAAGzGAQzAMIMYCzzYdqnKB8NW5p
+@username = adminuser
+@password = admin
+
+###
+# Gateway health (si está expuesto)
+GET {{baseUrl}}/actuator/health
+
+###
+# Users health a través del gateway
+GET {{baseUrl}}/users/actuator/health
+
+###
+# Intereses health (si Actuator está habilitado en el MS)
+GET {{baseUrl}}/intereses/actuator/health
+
+###
+# Crear interés SIN token (espera 401/403, pero comprueba ruteo y logging)
+POST {{baseUrl}}/intereses/api/v1/interests
+Content-Type: application/json
+
+{
+  "name": "test"
+}
+
+### 4) Obtener token (password grant) desde Keycloak
+# @name login
+POST {{authBase}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{clientId}}&client_secret={{clientSecret}}&username={{username}}&password={{password}}
+
+### 5) Crear interés CON token (roles ADMIN o USER)
+POST {{baseUrl}}/intereses/api/v1/interests
+Content-Type: application/json
+Authorization: Bearer {{login.response.body.$.access_token}}
+
+{
+  "name": "test-con-token"
+}
+
+###
+# Swagger Users vía gateway (api-docs)
+GET {{baseUrl}}/swagger/users/v3/api-docs
+
+###
+# Swagger Intereses vía gateway (api-docs)
+GET {{baseUrl}}/swagger/intereses/v3/api-docs
+
+

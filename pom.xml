@@ -51,15 +51,12 @@
 
     <!-- acá declaramos los módulos hijos -->
     <modules>
+        <module>config-server</module>
         <module>eureka-server</module>
         <module>users-service</module>
         <module>preferences-service</module>
         <module>api-gateway</module>
-        <!-- más adelante agregamos:
-        <module>users-service</module>
-        <module>preferences-service</module>
-        <module>api-gateway</module>
-        -->
+        <module>intereses-service</module>
     </modules>
 
     <!-- plugin común que heredan los hijos -->
