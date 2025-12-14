@@ -39,7 +39,7 @@ function App() {
             if (!freshToken) return;
 
             const response = await fetch(
-                `http://localhost:8082/swipe-service/api/v1/swipes/${userA}/${userB}`,
+                `http://localhost:8083/swipe-service/api/v1/swipes/${userA}/${userB}`,
                 {
                     method: "POST",
                     headers: {
@@ -77,7 +77,7 @@ function App() {
             if (!freshToken) return;
 
             const response = await fetch(
-                `http://localhost:8082/swipe-service/api/v1/swipes/matches/${userA}/${userB}`,
+                `http://localhost:8083/swipe-service/api/v1/swipes/matches/${userA}/${userB}`,
                 {
                     method: "GET",
                     headers: {
