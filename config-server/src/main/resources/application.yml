@@ -13,6 +13,9 @@ spring:
           default-label: main
           clone-on-start: true
           force-pull: true
+          # Si tu repo es privado:
+          # username: TU_USUARIO
+          # password: TU_TOKEN
 
 management:
   endpoints:

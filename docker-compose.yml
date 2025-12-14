@@ -22,7 +22,7 @@ services:
       SPRING_CLOUD_CONFIG_SERVER_GIT_URI: "https://github.com/ElNegis/cat-tinder-config-repo"
       SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL: "main"
     ports:
-      - "8888:8888"                                # EXTERNO:INTERNO
+      - "18888:8888"                                # EXTERNO:INTERNO
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8888/actuator/health"]
       interval: 5s
