@@ -97,7 +97,7 @@ services:
       keycloak:
         condition: service_started
     environment:
-      SERVER_PORT: "8082"
+      SERVER_PORT: "8083"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
       EUREKA_INSTANCE_HOSTNAME: "gateway"
       EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
@@ -105,7 +105,7 @@ services:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://localhost:8090/realms/swipes-realm"
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8090/realms/swipes-realm/protocol/openid-connect/certs"
     ports:
-      - "8082:8082"
+      - "8083:8083"
 
   # === Swipe-service ===
   swipe-service:
@@ -120,11 +120,11 @@ services:
       config-server:
         condition: service_healthy
     environment:
-      SERVER_PORT: "8081"
+      SERVER_PORT: "8086"
       SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://localhost:8090/realms/swipes-realm"
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8090/realms/swipes-realm/protocol/openid-connect/certs"
-    ports: ["8081:8081"]
+    ports: ["8086:8086"]
 
 volumes:
   pgdata:

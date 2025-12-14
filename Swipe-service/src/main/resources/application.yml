@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 8086
   forward-headers-strategy: framework   # respeta X-Forwarded-* del gateway
   error:
     include-message: always
