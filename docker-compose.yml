@@ -92,7 +92,7 @@ services:
     build:
       context: .
       dockerfile: confg-ms/Dockerfile
-    container_name: config-ms
+    container_name: confg-ms
     depends_on:
       postgres:
         condition: service_started
