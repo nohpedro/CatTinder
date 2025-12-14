@@ -28,9 +28,9 @@ spring:
       resourceserver:
         jwt:
           # En Docker:
-          issuer-uri: http://localhost:8090/realms/swipes-realm
+          issuer-uri: http://localhost:8080/realms/tinder-realm
           # opcional:
-          jwk-set-uri: http://localhost:8090/realms/swipes-realm/protocol/openid-connect/certs
+          jwk-set-uri: http://localhost:8080/realms/tinder-realm/protocol/openid-connect/certs
 
 springdoc:
   api-docs:
