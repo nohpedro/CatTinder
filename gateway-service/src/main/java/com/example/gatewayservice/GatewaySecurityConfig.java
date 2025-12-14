@@ -14,7 +14,8 @@ public class GatewaySecurityConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .cors(cors -> {}) // Habilitar CORS
+                .csrf(ServerHttpSecurity.CsrfSpec::disable) // Desactivar CSRF si es necesario
 
                 .authorizeExchange(exchange -> exchange
                         // CORS preflight
@@ -26,15 +27,14 @@ public class GatewaySecurityConfig {
                         // Swagger del GATEWAY (si algún día lo expones aquí mismo)
                         .pathMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
 
-
+                        // Permitir Swagger del SwipeService
                         .pathMatchers(
                                 "/swipe-service/swagger-ui/**",
                                 "/swipe-service/swagger-ui.html",
                                 "/swipe-service/v3/api-docs/**"
                         ).permitAll()
 
-
-                        // Todo lo demás requiere JWT válido
+                        // Requiere JWT válido para el resto
                         .anyExchange().authenticated()
                 )
 

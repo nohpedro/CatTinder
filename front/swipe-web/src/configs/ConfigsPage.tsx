@@ -1,19 +1,10 @@
 import { useState } from "react";
-import keycloak from "./keycloak";
+import keycloak from "../keycloak";
+import type { ConfigPayload, ConfigResponse } from "./types";
+import { getConfigApi, postConfig } from "./api";
+import { useNavigate } from "react-router-dom";
 
-type ConfigPayload = {
-    userid: string;
-    darkmode: boolean;
-    showInfo: boolean;
-    showOnlineStatus: boolean;
-    showNotifications: boolean;
-};
-
-type ConfigResponse = ConfigPayload & {
-    message?: string;
-};
-
-function App() {
+export default function ConfigsPage() {
     const username = keycloak.tokenParsed?.preferred_username ?? "u123";
 
     const [userId, setUserId] = useState(username);
@@ -22,8 +13,12 @@ function App() {
     const [showOnlineStatus, setShowOnlineStatus] = useState(false);
     const [showNotifications, setShowNotifications] = useState(true);
 
-    const [result, setResult] = useState<ConfigResponse | { message: string } | null>(null);
+    const [result, setResult] = useState<
+        ConfigResponse | { message: string } | null
+    >(null);
     const [loading, setLoading] = useState(false);
+
+    const navigate = useNavigate();
 
     const handleLogout = () => {
         keycloak.logout({ redirectUri: window.location.origin });
@@ -56,28 +51,8 @@ function App() {
                 showNotifications,
             };
 
-            const response = await fetch(
-                `http://localhost:8083/confg-ms/api/v1/config/${userId}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${freshToken}`,
-                    },
-                    body: JSON.stringify(payload),
-                }
-            );
-
-            const data = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                setResult({
-                    message: `Error ${response.status}: ${response.statusText}`,
-                    ...(data as any),
-                });
-            } else {
-                setResult(data as ConfigResponse);
-            }
+            const data = await postConfig(userId, payload, freshToken);
+            setResult(data);
         } catch (e) {
             console.error(e);
             setResult({ message: "Error llamando al backend (config-ms)" });
@@ -86,7 +61,6 @@ function App() {
         }
     };
 
-    // 👉 NUEVO: GET /config/{userId}
     const getConfig = async () => {
         try {
             setLoading(true);
@@ -95,40 +69,26 @@ function App() {
             const freshToken = await withAuth();
             if (!freshToken) return;
 
-            const response = await fetch(
-                `http://localhost:8083/confg-ms/api/v1/config/${userId}`,
-                {
-                    method: "GET",
-                    headers: {
-                        Accept: "application/json",
-                        Authorization: `Bearer ${freshToken}`,
-                    },
-                }
-            );
+            const data = await getConfigApi(userId, freshToken);
 
-            const data = await response.json().catch(() => ({}));
-
-            if (!response.ok) {
-                setResult({
-                    message: `Error ${response.status}: ${response.statusText}`,
-                    ...(data as any),
-                });
-            } else {
-                const cfg = data as ConfigResponse;
-
-                // Opcional: si el backend devuelve estos campos, sincronizamos el formulario
-                if (cfg.userid) setUserId(cfg.userid);
-                if (typeof cfg.darkmode === "boolean") setDarkmode(cfg.darkmode);
-                if (typeof cfg.showInfo === "boolean") setShowInfo(cfg.showInfo);
-                if (typeof cfg.showOnlineStatus === "boolean") {
-                    setShowOnlineStatus(cfg.showOnlineStatus);
-                }
-                if (typeof cfg.showNotifications === "boolean") {
-                    setShowNotifications(cfg.showNotifications);
-                }
-
-                setResult(cfg);
+            // Si vino error, solo lo mostramos
+            if ("message" in data && !("userid" in data)) {
+                setResult(data);
+                return;
             }
+
+            const cfg = data as ConfigResponse;
+
+            // Sincroniza el formulario con lo que venga del backend
+            if (cfg.userid) setUserId(cfg.userid);
+            if (typeof cfg.darkmode === "boolean") setDarkmode(cfg.darkmode);
+            if (typeof cfg.showInfo === "boolean") setShowInfo(cfg.showInfo);
+            if (typeof cfg.showOnlineStatus === "boolean")
+                setShowOnlineStatus(cfg.showOnlineStatus);
+            if (typeof cfg.showNotifications === "boolean")
+                setShowNotifications(cfg.showNotifications);
+
+            setResult(cfg);
         } catch (e) {
             console.error(e);
             setResult({ message: "Error llamando al backend (GET config)" });
@@ -160,8 +120,7 @@ function App() {
         border: "4px solid #5b3214",
         background:
             "repeating-linear-gradient(45deg, #3b2413 0, #3b2413 10px, #4c2f17 10px, #4c2f17 20px)",
-        boxShadow:
-            "0 0 0 4px #201308, 0 12px 0 #201308, 0 12px 0 4px #000000aa",
+        boxShadow: "0 0 0 4px #201308, 0 12px 0 #201308, 0 12px 0 4px #000000aa",
         position: "relative" as const,
     };
 
@@ -239,10 +198,17 @@ function App() {
 
     const logoutButton = {
         ...buttonBase,
-        marginBottom: "1.5rem",
+        marginBottom: "0.8rem",
         background:
             "linear-gradient(180deg, #ff5b2b 0%, #d32710 60%, #7b1406 100%)",
         color: "#ffeec5",
+    };
+
+    const menuButton = {
+        ...buttonBase,
+        marginBottom: "1.5rem",
+        background: "linear-gradient(180deg, #00eaff 0%, #0aa3c7 60%, #055b6e 100%)",
+        color: "#001015",
     };
 
     const primaryButton = {
@@ -294,14 +260,15 @@ function App() {
                             textShadow: "2px 2px 0 #3a2009",
                         }}
                     >
-                        Sesión:{" "}
-                        <span style={{ color: "#ffe27a" }}>{username}</span>
+                        Sesión: <span style={{ color: "#ffe27a" }}>{username}</span>
                     </p>
 
-                    <button
-                        onClick={handleLogout}
-                        style={logoutButton}
-                    >
+                    {/* ✅ Volver al menú */}
+                    <button onClick={() => navigate("/menu")} style={menuButton}>
+                        VOLVER AL MENÚ
+                    </button>
+
+                    <button onClick={handleLogout} style={logoutButton}>
                         SALIR DEL TEMPLO
                     </button>
 
@@ -331,9 +298,7 @@ function App() {
                                 <input
                                     type="checkbox"
                                     checked={darkmode}
-                                    onChange={(e) =>
-                                        setDarkmode(e.target.checked)
-                                    }
+                                    onChange={(e) => setDarkmode(e.target.checked)}
                                     style={{ transform: "scale(1.2)" }}
                                 />
                                 <span>MODO OSCURO</span>
@@ -343,9 +308,7 @@ function App() {
                                 <input
                                     type="checkbox"
                                     checked={showInfo}
-                                    onChange={(e) =>
-                                        setShowInfo(e.target.checked)
-                                    }
+                                    onChange={(e) => setShowInfo(e.target.checked)}
                                     style={{ transform: "scale(1.2)" }}
                                 />
                                 <span>MOSTRAR INFO</span>
@@ -355,9 +318,7 @@ function App() {
                                 <input
                                     type="checkbox"
                                     checked={showOnlineStatus}
-                                    onChange={(e) =>
-                                        setShowOnlineStatus(e.target.checked)
-                                    }
+                                    onChange={(e) => setShowOnlineStatus(e.target.checked)}
                                     style={{ transform: "scale(1.2)" }}
                                 />
                                 <span>ESTADO EN LÍNEA</span>
@@ -367,16 +328,13 @@ function App() {
                                 <input
                                     type="checkbox"
                                     checked={showNotifications}
-                                    onChange={(e) =>
-                                        setShowNotifications(e.target.checked)
-                                    }
+                                    onChange={(e) => setShowNotifications(e.target.checked)}
                                     style={{ transform: "scale(1.2)" }}
                                 />
                                 <span>NOTIFICACIONES</span>
                             </label>
                         </div>
 
-                        {/* Botón GET */}
                         <button
                             onClick={getConfig}
                             disabled={loading}
@@ -388,7 +346,6 @@ function App() {
                             {loading ? "CARGANDO..." : "CARGAR CONFIG"}
                         </button>
 
-                        {/* Botón POST */}
                         <button
                             onClick={sendConfig}
                             disabled={loading}
@@ -407,9 +364,7 @@ function App() {
                     <div style={{ fontSize: "0.7rem" }}>
                         <h3 style={sectionTitle}>RESULTADO DEL TOTEM</h3>
                         {result ? (
-                            <pre style={resultBox}>
-                                {JSON.stringify(result, null, 2)}
-                            </pre>
+                            <pre style={resultBox}>{JSON.stringify(result, null, 2)}</pre>
                         ) : (
                             <p
                                 style={{
@@ -418,8 +373,8 @@ function App() {
                                     fontSize: "0.65rem",
                                 }}
                             >
-                                Usa “CARGAR CONFIG” o “GUARDAR CONFIG” para ver la
-                                respuesta del servidor.
+                                Usa “CARGAR CONFIG” o “GUARDAR CONFIG” para ver la respuesta del
+                                servidor.
                             </p>
                         )}
                     </div>
@@ -428,5 +383,3 @@ function App() {
         </div>
     );
 }
-
-export default App;

@@ -10,8 +10,6 @@ spring:
     name: swipe-service
 
   datasource:
-    # OJO: esto es para correr local.
-    # En Docker deberías usar jdbc:postgresql://postgres:5432/review-db
     url: jdbc:postgresql://localhost:5433/review-db
     username: admin
     password: admin

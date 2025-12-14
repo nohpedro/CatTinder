@@ -1,5 +1,5 @@
 import React from "react";
-import type { SwipeResponse } from "../types";
+import type { SwipeResponse } from "../../types.ts";
 
 type ResultPanelProps = {
     result: SwipeResponse | null;

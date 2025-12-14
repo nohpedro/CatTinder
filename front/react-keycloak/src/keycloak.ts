@@ -1,9 +1,9 @@
 import Keycloak from "keycloak-js";
 
 const keycloak = new Keycloak({
-    url: "http://localhost:8090/",
-    realm: "confi-realm",
-    clientId: "conf-client",
+    url: "http://localhost:8080/",
+    realm: "tinder-realm",
+    clientId: "tinder",
 });
 
 export default keycloak;

@@ -126,6 +126,31 @@ services:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8080/realms/tinder-realm/protocol/openid-connect/certs"
     ports: ["8086:8086"]
 
+
+  confg-ms:
+    build:
+      context: .
+      dockerfile: confg-ms/Dockerfile
+    container_name: config-ms
+    depends_on:
+      postgres:
+        condition: service_started
+      eureka:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: "8087"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/review-db"
+      SPRING_DATASOURCE_USERNAME: "admin"
+      SPRING_DATASOURCE_PASSWORD: "admin"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka:8762/eureka/"
+      SPRING_CLOUD_CONFIG_URI: "http://config-server:8888"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://localhost:8080/realms/tinder-realm"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8080/realms/tinder-realm/protocol/openid-connect/certs"
+    ports: ["8087:8087"]
+
 volumes:
   pgdata:
   keycloak_pgdata:

@@ -1,5 +1,5 @@
 server:
-  port: 8085
+  port: 8087
   forward-headers-strategy: framework
   error:
     include-message: always
@@ -20,6 +20,14 @@ spring:
     show-sql: true
     properties:
       hibernate.format_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # En Docker:
+          issuer-uri: http://localhost:8080/realms/tinder-realm
+          # opcional:
+          jwk-set-uri: http://localhost:8080/realms/tinder-realm/protocol/openid-connect/certs
 
 springdoc:
   api-docs:
