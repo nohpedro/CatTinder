@@ -1,0 +1,62 @@
+server:
+  port: 5000
+
+spring:
+  application:
+    name: authentication-service
+  datasource:
+    url: jdbc:postgresql://postgres:5432/review-db
+    username: admin
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8090/realms/swipes-realm
+          jwk-set-uri: http://keycloak:8090/realms/swipes-realm/protocol/openid-connect/certs
+
+eureka:
+  instance:
+    preferIpAddress: true
+    hostname: localhost
+    non-secure-port: ${server.port}
+    instance-id: ${spring.application.name}:${server.port}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://eureka:8762/eureka/
+    registryFetchIntervalSeconds: 5
+    initialInstanceInfoReplicationIntervalSeconds: 5
+
+jwt:
+  secret: mySecretKeyForJWTGenerationInAuthenticationService2024
+  expiration: 86400000
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+

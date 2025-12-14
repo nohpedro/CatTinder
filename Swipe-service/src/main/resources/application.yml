@@ -1,0 +1,64 @@
+server:
+  port: 8081
+  forward-headers-strategy: framework   # respeta X-Forwarded-* del gateway
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  application:
+    name: swipe-service
+
+  datasource:
+    # OJO: esto es para correr local.
+    # En Docker deberías usar jdbc:postgresql://postgres:5432/review-db
+    url: jdbc:postgresql://localhost:5433/review-db
+    username: admin
+    password: admin
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # En Docker:
+          issuer-uri: http://localhost:8090/realms/swipes-realm
+          # opcional:
+          jwk-set-uri: http://localhost:8090/realms/swipes-realm/protocol/openid-connect/certs
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+    # config-url: /swipe-service/v3/api-docs/swagger-config
+
+eureka:
+  instance:
+    preferIpAddress: true
+    hostname: localhost
+    non-secure-port: ${server.port}
+    instance-id: ${spring.application.name}:${server.port}
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      # En Docker se sobreescribe con env EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+      defaultZone: http://localhost:8762/eureka/
+    registryFetchIntervalSeconds: 5
+    initialInstanceInfoReplicationIntervalSeconds: 5
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
