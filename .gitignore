@@ -18,3 +18,8 @@
 # Maven
 target/
 .mvn/wrapper/maven-wrapper.jar
+
+# IDE configuration files
+.idea/
+.vscode/
+*.iml
