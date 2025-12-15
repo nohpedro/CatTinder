@@ -5,96 +5,65 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Igual que users-service -->
+    <!-- Hereda configuración común: Java 17, Spring Boot 3.3.x, Spring Cloud 2023.0.x -->
     <parent>
         <groupId>com.example</groupId>
         <artifactId>cattinder-platform</artifactId>
         <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>api-gateway</artifactId>
-    <name>CatTinder - API Gateway</name>
-    <description>Gateway de enrutamiento para CatTinder</description>
+    <artifactId>config-server</artifactId>
+    <name>CatTinder - Config Server</name>
+    <description>Spring Cloud Config Server</description>
 
     <dependencies>
-
-        <!-- Spring Cloud Gateway (reactivo) -->
+        <!-- Config Server -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-gateway</artifactId>
+            <artifactId>spring-cloud-config-server</artifactId>
         </dependency>
 
-        <!-- Necesitamos WebFlux porque Gateway es full reactivo -->
+        <!-- Web para servir endpoints -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Eureka Client para que el gateway descubra users-service, preferences-service, etc -->
+        <!-- Eureka Client para registrarse en el servidor Eureka -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
-        <!-- Actuator (health del gateway, metrics, etc) -->
+        <!-- Actuator -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- Validación reactiva (por si luego tenemos DTOs en requests) -->
+        <!-- Validación -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
         </dependency>
 
-        <!-- OpenAPI/Swagger para WebFlux -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
-            <version>2.6.0</version>
-        </dependency>
-
-        <!-- Lombok opcional -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- Tests (reactor-test incluido en starter-test normalmente) -->
+        <!-- Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <!-- quitamos junit vintage etc si el parent ya lo hace está ok, pero lo dejo limpio -->
-                <exclusion>
-                    <groupId>org.junit.vintage</groupId>
-                    <artifactId>junit-vintage-engine</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
 
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Igual que en users-service -->
+            <!-- Spring Boot Maven Plugin: empaquetado ejecutable -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.3.4</version> <!-- ajusta a tu versión -->
                 <executions>
                     <execution>
                         <goals>
@@ -104,6 +73,7 @@
                 </executions>
             </plugin>
 
+            <!-- Maven Compiler Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -117,8 +87,8 @@
                     </compilerArgs>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
+
 
 </project>

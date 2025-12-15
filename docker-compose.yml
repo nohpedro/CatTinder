@@ -12,6 +12,11 @@ services:
       - cattinder-net
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   eureka-server:
     build:
@@ -22,6 +27,37 @@ services:
       - "8761:8761"
     networks:
       - cattinder-net
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ========== CONFIG SERVER ==========
+  config-server:
+    build:
+      context: .
+      dockerfile: config-server/Dockerfile
+    container_name: config-server
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: https://github.com/BLVESMxN/cattinder-config-repo.git
+      SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL: main
+      SPRING_CLOUD_CONFIG_SERVER_GIT_CLONE_ON_START: "true"
+      ENCRYPT_KEY: MySecretKey12345
+    ports:
+      - "8888:8888"
+    networks:
+      - cattinder-net
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  # ====================================
 
   users-service:
     build:
@@ -29,14 +65,27 @@ services:
       dockerfile: users-service/Dockerfile
     container_name: users-service
     depends_on:
-      - postgres
-      - eureka-server
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
     environment:
-      # override por si no quieres usar ENV del Dockerfile
+      # Config Server
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      SPRING_CLOUD_CONFIG_FAIL_FAST: "true"
+      # Base de datos
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cattinder
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      # Eureka
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      # Keycloak
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8080/realms/cattinder
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/cattinder/protocol/openid-connect/certs
     ports:
       - "8081:8081"
     networks:
@@ -48,13 +97,27 @@ services:
       dockerfile: preferences-service/Dockerfile
     container_name: preferences-service
     depends_on:
-      - postgres
-      - eureka-server
+      postgres:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
     environment:
+      # Config Server
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      SPRING_CLOUD_CONFIG_FAIL_FAST: "true"
+      # Base de datos
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cattinder
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
+      # Eureka
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      # Keycloak
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8080/realms/cattinder
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/cattinder/protocol/openid-connect/certs
     ports:
       - "8082:8082"
     networks:
@@ -66,15 +129,60 @@ services:
       dockerfile: api-gateway/Dockerfile
     container_name: api-gateway
     depends_on:
-      - eureka-server
-      - users-service
-      - preferences-service
+      eureka-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      users-service:
+        condition: service_started
+      preferences-service:
+        condition: service_started
+      keycloak:
+        condition: service_started
     environment:
+      # Config Server
+
+      SPRING_CLOUD_CONFIG_URI: http://config-server:8888
+      SPRING_CLOUD_CONFIG_FAIL_FAST: "true"
+      # Eureka
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+      # Keycloak
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:8080/realms/cattinder
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/cattinder/protocol/openid-connect/certs
     ports:
       - "8083:8083"
     networks:
       - cattinder-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1.1
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: "false"
+      KEYCLOAK_IMPORT: /opt/keycloak/data/import/realm-export.json
+    command: start-dev
+    ports:
+      - "8080:8080"
+    networks:
+      - cattinder-net
+    volumes:
+      - ./keycloak-config:/opt/keycloak/data/import
+
+  frontend:
+    build:
+      context: ./cattinder-frontend
+      dockerfile: Dockerfile
+    container_name: cattinder-frontend
+    ports:
+      - "5174:5174"
+    networks:
+      - cattinder-net
+    depends_on:
+      - keycloak
+      - api-gateway
 
 networks:
   cattinder-net:

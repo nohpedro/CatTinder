@@ -55,6 +55,7 @@
         <module>users-service</module>
         <module>preferences-service</module>
         <module>api-gateway</module>
+        <module>config-server</module>
         <!-- más adelante agregamos:
         <module>users-service</module>
         <module>preferences-service</module>
