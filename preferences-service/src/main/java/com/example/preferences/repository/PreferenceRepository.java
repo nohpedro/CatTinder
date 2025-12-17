@@ -8,14 +8,10 @@ import java.util.List;
 
 public interface PreferenceRepository extends JpaRepository<Preference, Long> {
 
-    // Derived query: Spring genera "SELECT * FROM preferences WHERE user_id = ?"
+    // Derived query: todas las configuraciones únicas de un usuario
     List<Preference> findByUserId(Long userId);
 
-    // Native query: ejemplo para la rúbrica
-    // Trae todas las preferencias de un usuario filtrando por disponibilidad
-    @Query(
-            value = "SELECT * FROM preferences WHERE user_id = :userId AND availability = :availability",
-            nativeQuery = true
-    )
+    // Native query: por ejemplo buscar por disponibilidad
+    @Query(value = "SELECT * FROM preferences WHERE user_id = :userId AND availability = :availability", nativeQuery = true)
     List<Preference> findByUserIdAndAvailabilityNative(Long userId, String availability);
 }

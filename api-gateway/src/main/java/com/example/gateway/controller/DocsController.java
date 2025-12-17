@@ -44,6 +44,15 @@ public class DocsController {
                 .append("</a></div>")
                 .append("</div>")
 
+                // MATCHES SERVICE
+                .append("<div class=\"card\">")
+                .append("<div><strong>Matches Service</strong></div>")
+                .append("<div class=\"path\">/matches/**</div>")
+                .append("<div><a href=\"/swagger/matches/swagger-ui/index.html?url=/swagger/matches/v3/api-docs\" target=\"_blank\">")
+                .append("Abrir Swagger Matches")
+                .append("</a></div>")
+                .append("</div>")
+
                 // ACTUATOR GATEWAY
                 .append("<div class=\"card\">")
                 .append("<div><strong>Gateway Actuator</strong></div>")

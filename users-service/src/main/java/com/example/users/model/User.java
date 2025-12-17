@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-@Table(name = "users") // nombre de la tabla en la BD
+@Table(name = "users")
 public class User {
 
     @Id
@@ -26,10 +26,28 @@ public class User {
     @Column(nullable = false)
     private Boolean active;
 
-    // Constructor vacío requerido por JPA
+    // NUEVOS CAMPOS OPCIONALES
+    @Column(length = 500)
+    private String bio;
+
+    @Column
+    private String career;
+
+    @Column
+    private String instagramUrl;
+
+    @Column
+    private String linkedinUrl;
+
+    @Column
+    private String xUrl;
+
+    @Column(nullable = false)
+    private Boolean visible = true;
+
+    // Constructores
     public User() {}
 
-    // Constructor principal (por defecto activo=true)
     public User(Long id, String name, String email) {
         this.id = id;
         this.name = name;
@@ -37,8 +55,7 @@ public class User {
         this.active = true;
     }
 
-    // Constructor completo
-    public User(Long id, String name, String email, boolean active) {
+    public User(Long id, String name, String email, Boolean active) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -58,6 +75,24 @@ public class User {
     public Boolean getActive() { return active; }
     public void setActive(Boolean active) { this.active = active; }
 
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
+
+    public String getCareer() { return career; }
+    public void setCareer(String career) { this.career = career; }
+
+    public String getInstagramUrl() { return instagramUrl; }
+    public void setInstagramUrl(String instagramUrl) { this.instagramUrl = instagramUrl; }
+
+    public String getLinkedinUrl() { return linkedinUrl; }
+    public void setLinkedinUrl(String linkedinUrl) { this.linkedinUrl = linkedinUrl; }
+
+    public String getXUrl() { return xUrl; }
+    public void setXUrl(String xUrl) { this.xUrl = xUrl; }
+
+    public Boolean getVisible() { return visible; }
+    public void setVisible(Boolean visible) { this.visible = visible; }
+
     @Override
     public String toString() {
         return "User{" +
@@ -65,6 +100,12 @@ public class User {
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
                 ", active=" + active +
+                ", bio='" + bio + '\'' +
+                ", career='" + career + '\'' +
+                ", instagramUrl='" + instagramUrl + '\'' +
+                ", linkedinUrl='" + linkedinUrl + '\'' +
+                ", xUrl='" + xUrl + '\'' +
+                ", visible=" + visible +
                 '}';
     }
 }

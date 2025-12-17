@@ -1,13 +1,14 @@
 package com.example.preferences.controller;
 
 import com.example.preferences.dto.PreferenceDTO;
+import com.example.preferences.dto.PreferenceOptionDTO;
+import com.example.preferences.dto.PreferenceUserDTO;
 import com.example.preferences.model.Preference;
+import com.example.preferences.model.PreferenceOption;
+import com.example.preferences.model.PreferenceUser;
+import com.example.preferences.service.PreferenceOptionService;
 import com.example.preferences.service.PreferenceService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import com.example.preferences.service.PreferenceUserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,99 +21,78 @@ import java.util.List;
 public class PreferenceController {
 
     private final PreferenceService preferenceService;
+    private final PreferenceOptionService optionService;
+    private final PreferenceUserService userService;
 
-    public PreferenceController(PreferenceService preferenceService) {
+    public PreferenceController(PreferenceService preferenceService,
+                                PreferenceOptionService optionService,
+                                PreferenceUserService userService) {
         this.preferenceService = preferenceService;
+        this.optionService = optionService;
+        this.userService = userService;
     }
 
     // =========================
-    // CREATE
+    // PREFERENCE (StudyStyle + Availability)
     // =========================
-    @Operation(summary = "Crear una nueva preferencia para un usuario")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Preferencia creada exitosamente",
-                    content = @Content(schema = @Schema(implementation = Preference.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Datos inválidos",
-                    content = @Content(schema = @Schema(implementation = PreferenceDTO.class))
-            )
-    })
-    @PostMapping
-    public ResponseEntity<Preference> createPreference(@Valid @RequestBody PreferenceDTO dto) {
-        Preference preference = preferenceService.createPreference(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(preference);
+
+    @PostMapping("/settings")
+    public ResponseEntity<Preference> createOrUpdateSettings(@Valid @RequestBody PreferenceDTO dto) {
+        Preference pref = preferenceService.createOrUpdateSettings(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(pref);
+    }
+
+    @GetMapping("/settings/{userId}")
+    public ResponseEntity<Preference> getSettingsByUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(preferenceService.getSettingsByUser(userId));
     }
 
     // =========================
-    // READ: TODAS LAS PREFS DE UN USUARIO
+    // PREFERENCE OPTION (Opciones globales)
     // =========================
-    @Operation(summary = "Obtener todas las preferencias de un usuario")
-    @ApiResponse(
-            responseCode = "200",
-            description = "Preferencias devueltas exitosamente",
-            content = @Content(schema = @Schema(implementation = Preference.class))
-    )
+
+    @PostMapping("/options")
+    public ResponseEntity<PreferenceOption> createOption(@Valid @RequestBody PreferenceOptionDTO dto) {
+        PreferenceOption option = optionService.createOption(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(option);
+    }
+
+    @GetMapping("/options")
+    public ResponseEntity<List<PreferenceOption>> getAllOptions() {
+        return ResponseEntity.ok(optionService.getAllOptions());
+    }
+
+    @PutMapping("/options/{id}")
+    public ResponseEntity<PreferenceOption> updateOption(@PathVariable Long id,
+                                                         @Valid @RequestBody PreferenceOptionDTO dto) {
+        return ResponseEntity.ok(optionService.updateOption(id, dto));
+    }
+
+    @DeleteMapping("/options/{id}")
+    public ResponseEntity<Void> deleteOption(@PathVariable Long id) {
+        optionService.deleteOption(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // =========================
+    // PREFERENCE USER (Relación Usuario-Preferencia)
+    // =========================
+
+    @PostMapping("/user")
+    public ResponseEntity<PreferenceUser> addUserPreference(@Valid @RequestBody PreferenceUserDTO dto) {
+        PreferenceUser pu = userService.addPreferenceToUser(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(pu);
+    }
+
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Preference>> getPreferencesByUserId(
-            @PathVariable("userId") Long userId
-    ) {
-        return ResponseEntity.ok(preferenceService.getPreferencesByUserId(userId));
+    public ResponseEntity<List<PreferenceUser>> getUserPreferences(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getPreferencesByUser(userId));
     }
 
-    // =========================
-    // READ CON FILTRO (availability)
-    // =========================
-    @Operation(summary = "Obtener preferencias de un usuario filtradas por disponibilidad (usa consulta nativa SQL)")
-    @ApiResponse(
-            responseCode = "200",
-            description = "Preferencias filtradas devueltas exitosamente",
-            content = @Content(schema = @Schema(implementation = Preference.class))
-    )
-    @GetMapping("/user/{userId}/filter")
-    public ResponseEntity<List<Preference>> getPreferencesByUserAndAvailability(
-            @PathVariable("userId") Long userId,
-            @RequestParam String availability
-    ) {
-        List<Preference> prefs =
-                preferenceService.getPreferencesByUserIdAndAvailability(userId, availability);
-        return ResponseEntity.ok(prefs);
-    }
-
-    // =========================
-    // UPDATE
-    // =========================
-    @Operation(summary = "Actualizar una preferencia existente")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Preferencia actualizada",
-                    content = @Content(schema = @Schema(implementation = Preference.class))
-            ),
-            @ApiResponse(responseCode = "404", description = "Preferencia no encontrada")
-    })
-    @PutMapping("/{id}")
-    public ResponseEntity<Preference> updatePreference(
-            @PathVariable("id") Long id,
-            @Valid @RequestBody PreferenceDTO dto
-    ) {
-        return ResponseEntity.ok(preferenceService.updatePreference(id, dto));
-    }
-
-    // =========================
-    // DELETE
-    // =========================
-    @Operation(summary = "Eliminar una preferencia")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Preferencia eliminada"),
-            @ApiResponse(responseCode = "404", description = "Preferencia no encontrada")
-    })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePreference(@PathVariable("id") Long id) {
-        preferenceService.deletePreference(id);
+    @DeleteMapping("/user/{userId}/option/{optionId}")
+    public ResponseEntity<Void> removeUserPreference(@PathVariable Long userId,
+                                                     @PathVariable Long optionId) {
+        userService.removePreferenceFromUser(userId, optionId);
         return ResponseEntity.noContent().build();
     }
 }

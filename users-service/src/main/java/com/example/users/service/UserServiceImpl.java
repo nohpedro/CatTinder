@@ -1,6 +1,7 @@
 package com.example.users.service;
 
 import com.example.users.dto.UserDTO;
+import com.example.users.dto.UserProfileDTO;
 import com.example.users.exception.UserNotFoundException;
 import com.example.users.model.User;
 import com.example.users.repository.UserRepository;
@@ -14,7 +15,6 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
-    // Inyección por constructor
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -26,20 +26,19 @@ public class UserServiceImpl implements UserService {
         user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
 
-        // si el DTO manda active, úsalo. Si no manda, por defecto true:
         if (userDTO.getActive() != null) {
             user.setActive(userDTO.getActive());
         } else {
             user.setActive(true);
         }
 
-        return userRepository.save(user); // INSERT en BD
+        return userRepository.save(user);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<User> getAllUsers() {
-        return userRepository.findAll(); // SELECT * FROM users
+        return userRepository.findAll();
     }
 
     @Transactional(readOnly = true)
@@ -57,15 +56,20 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() ->
                         new UserNotFoundException("Usuario no encontrado con id: " + id));
 
-        existing.setName(userDTO.getName());
-        existing.setEmail(userDTO.getEmail());
-
-        // si manda active en el DTO, también actualizamos
-        if (userDTO.getActive() != null) {
-            existing.setActive(userDTO.getActive());
+        // Validar email único
+        if(userDTO.getEmail() != null && !userDTO.getEmail().equals(existing.getEmail())) {
+            userRepository.findByEmail(userDTO.getEmail())
+                    .filter(u -> !u.getId().equals(id))
+                    .ifPresent(u -> {
+                        throw new IllegalArgumentException("Email ya existe en otro usuario");
+                    });
+            existing.setEmail(userDTO.getEmail());
         }
 
-        return userRepository.save(existing); // UPDATE en BD
+        if(userDTO.getName() != null) existing.setName(userDTO.getName());
+        if(userDTO.getActive() != null) existing.setActive(userDTO.getActive());
+
+        return userRepository.save(existing);
     }
 
     @Transactional
@@ -75,7 +79,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() ->
                         new UserNotFoundException("Usuario no encontrado con id: " + id));
 
-        userRepository.delete(existing); // DELETE en BD
+        userRepository.delete(existing);
     }
 
     @Transactional(readOnly = true)
@@ -94,7 +98,7 @@ public class UserServiceImpl implements UserService {
                         new UserNotFoundException("Usuario no encontrado con id: " + id));
 
         existing.setActive(active);
-        return userRepository.save(existing); // persiste el cambio de estado
+        return userRepository.save(existing);
     }
 
     @Transactional(readOnly = true)
@@ -103,10 +107,72 @@ public class UserServiceImpl implements UserService {
         return userRepository.count();
     }
 
-    // 🔥 EXTRA: usamos la native query findAllActiveUsers()
     @Transactional(readOnly = true)
     @Override
     public List<User> getAllActiveUsers() {
         return userRepository.findAllActiveUsers();
+    }
+
+    // -----------------------
+    // MÉTODOS PARA PERFIL
+    // -----------------------
+
+    @Transactional(readOnly = true)
+    @Override
+    public UserProfileDTO getUserProfile(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con id: " + id));
+
+        return new UserProfileDTO(
+                user.getName(),
+                user.getEmail(),
+                user.getActive(),
+                user.getBio(),
+                user.getCareer(),
+                user.getInstagramUrl(),
+                user.getLinkedinUrl(),
+                user.getXUrl(),
+                user.getVisible()
+        );
+    }
+
+    @Transactional
+    @Override
+    public UserProfileDTO updateUserProfile(Long id, UserProfileDTO profileDTO) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado con id: " + id));
+
+        // Validar email único
+        if(profileDTO.getEmail() != null && !profileDTO.getEmail().equals(user.getEmail())) {
+            userRepository.findByEmail(profileDTO.getEmail())
+                    .filter(u -> !u.getId().equals(id))
+                    .ifPresent(u -> {
+                        throw new IllegalArgumentException("Email ya existe en otro usuario");
+                    });
+            user.setEmail(profileDTO.getEmail());
+        }
+
+        if (profileDTO.getName() != null) user.setName(profileDTO.getName());
+        if (profileDTO.getActive() != null) user.setActive(profileDTO.getActive());
+        if (profileDTO.getBio() != null) user.setBio(profileDTO.getBio());
+        if (profileDTO.getCareer() != null) user.setCareer(profileDTO.getCareer());
+        if (profileDTO.getInstagramUrl() != null) user.setInstagramUrl(profileDTO.getInstagramUrl());
+        if (profileDTO.getLinkedinUrl() != null) user.setLinkedinUrl(profileDTO.getLinkedinUrl());
+        if (profileDTO.getXUrl() != null) user.setXUrl(profileDTO.getXUrl());
+        if (profileDTO.getVisible() != null) user.setVisible(profileDTO.getVisible());
+
+        User updated = userRepository.save(user);
+
+        return new UserProfileDTO(
+                updated.getName(),
+                updated.getEmail(),
+                updated.getActive(),
+                updated.getBio(),
+                updated.getCareer(),
+                updated.getInstagramUrl(),
+                updated.getLinkedinUrl(),
+                updated.getXUrl(),
+                updated.getVisible()
+        );
     }
 }

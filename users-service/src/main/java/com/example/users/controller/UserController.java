@@ -1,6 +1,7 @@
 package com.example.users.controller;
 
 import com.example.users.dto.UserDTO;
+import com.example.users.dto.UserProfileDTO;
 import com.example.users.model.User;
 import com.example.users.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,10 +24,13 @@ public class UserController {
 
     private final UserService userService;
 
-    // NOTA: Spring inyecta la implementación (UserServiceImpl)
     public UserController(UserService userService) {
         this.userService = userService;
     }
+
+    // ------------------------
+    // ENDPOINTS EXISTENTES
+    // ------------------------
 
     @Operation(summary = "Crear un nuevo usuario")
     @ApiResponses(value = {
@@ -57,7 +63,6 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
-    // NUEVO ENDPOINT: usuarios activos usando native query
     @Operation(summary = "Obtener todos los usuarios activos (consulta nativa SQL)")
     @ApiResponse(
             responseCode = "200",
@@ -66,7 +71,6 @@ public class UserController {
     )
     @GetMapping("/active")
     public ResponseEntity<List<User>> getAllActiveUsers() {
-        // downcast mínimo para no romper tu interfaz.
         List<User> users = userService.getAllActiveUsers();
         return ResponseEntity.ok(users);
     }
@@ -150,5 +154,30 @@ public class UserController {
     @GetMapping("/count")
     public ResponseEntity<Long> countUsers() {
         return ResponseEntity.ok(userService.countUsers());
+    }
+
+    // ------------------------
+    // NUEVOS ENDPOINTS: PERFIL DEL USUARIO LOGUEADO
+    // ------------------------
+
+    @Operation(summary = "Obtener perfil completo del usuario logueado")
+    @GetMapping("/me/profile")
+    public ResponseEntity<UserProfileDTO> getMyProfile(@AuthenticationPrincipal Jwt principal) {
+        String email = principal.getClaimAsString("email");
+        UserProfileDTO profile = userService.getUserProfile(userService.getUserByEmail(email).getId());
+        return ResponseEntity.ok(profile);
+    }
+
+    @Operation(summary = "Actualizar perfil completo del usuario logueado")
+    @PutMapping("/me/profile")
+    public ResponseEntity<UserProfileDTO> updateMyProfile(
+            @AuthenticationPrincipal Jwt principal,
+            @RequestBody UserProfileDTO profileDTO) {
+
+        String email = principal.getClaimAsString("email");
+        Long userId = userService.getUserByEmail(email).getId();
+
+        UserProfileDTO updatedProfile = userService.updateUserProfile(userId, profileDTO);
+        return ResponseEntity.ok(updatedProfile);
     }
 }

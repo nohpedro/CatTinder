@@ -1,36 +1,28 @@
 package com.example.preferences.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public class PreferenceDTO {
+
     @NotNull(message = "El userId es obligatorio")
     private Long userId;
 
-    @NotBlank(message = "La materia es obligatoria")
-    private String subject;
-
-    @NotBlank(message = "El estilo de estudio es obligatorio")
+    @NotNull(message = "El studyStyle es obligatorio")
     private String studyStyle;
 
-    @NotBlank(message = "La disponibilidad es obligatoria")
+    @NotNull(message = "La availability es obligatoria")
     private String availability;
 
     public PreferenceDTO() {}
 
-    public PreferenceDTO(Long userId, String subject, String studyStyle, String availability) {
+    public PreferenceDTO(Long userId, String studyStyle, String availability) {
         this.userId = userId;
-        this.subject = subject;
         this.studyStyle = studyStyle;
         this.availability = availability;
     }
 
-    // Getters & Setters
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
-
-    public String getSubject() { return subject; }
-    public void setSubject(String subject) { this.subject = subject; }
 
     public String getStudyStyle() { return studyStyle; }
     public void setStudyStyle(String studyStyle) { this.studyStyle = studyStyle; }

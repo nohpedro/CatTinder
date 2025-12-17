@@ -43,4 +43,16 @@ public class OpenApiProxyController {
                 .retrieve()
                 .bodyToMono(String.class);
     }
+
+    @GetMapping(
+            value = "/swagger/matches/v3/api-docs",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public Mono<String> matchesApiDocs() {
+        return webClientBuilder.build()
+                .get()
+                .uri("lb://MATCHES-SERVICE/v3/api-docs")
+                .retrieve()
+                .bodyToMono(String.class);
+    }
 }
